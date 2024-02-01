@@ -1,4 +1,5 @@
 import cv2 as cv
+from skimage.exposure import is_low_contrast
 
 class LowContrastDetection:
     

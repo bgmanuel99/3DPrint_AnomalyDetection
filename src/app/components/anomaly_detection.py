@@ -9,13 +9,14 @@ parent_dir = os.path.dirname(current_dir)
 sys.path.append(parent_dir)
 
 from extract.extract import Extract
+from components.low_contrast_detection.low_contrast_detection import LowContrastDetection
 
 class AnomalyDetection:
     
     @staticmethod
     def anomaly_detection(file_name: str, image_name: str):
         # Extract data
-        file, image = Extract.extract_process_data(file_name, image_name)
+        Extract.extract_process_data(file_name, image_name)
         # Detect low contrast images
         # Create perfect model based on gcode
         # Image segmentation
