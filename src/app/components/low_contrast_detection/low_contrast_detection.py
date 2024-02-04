@@ -1,10 +1,10 @@
 import cv2 as cv
 from skimage.exposure import is_low_contrast
 
-class LowContrastDetection:
+class LowContrastDetection(object):
     
-    @staticmethod
-    def low_contrast_dectection(image):
+    @classmethod
+    def low_contrast_dectection(cls, image):
         # Change color channels from BGR -> RGB
         image = cv.cvtColor(image, cv.COLOR_BGR2RGB)
         

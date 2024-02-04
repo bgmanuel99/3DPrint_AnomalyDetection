@@ -1,6 +1,8 @@
 import sys
+import os
 
 from components.anomaly_detection import AnomalyDetection
+from utils.constants import *
 
 if __name__ == "__main__":
     match sys.argv[1]:
