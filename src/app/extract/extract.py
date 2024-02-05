@@ -1,16 +1,31 @@
 import os
+import io
 import sys
+import numpy
 import cv2 as cv
+from typing import Tuple
 
 # Add the src directory to sys.path
 sys.path.append(os.path.dirname(os.getcwd()))
 
 from app.utils.exceptions.exceptions import *
+from app.common.common import system_out
+from app.utils.constants.constants import *
 
 class Extract(object):
     
     @classmethod
-    def extract_process_data(cls, file_name: str, image_name: str):
+    def extract_process_data(cls, file_name: str, image_name: str) -> Tuple[io.TextIOWrapper, numpy.ndarray]:
+        """Method to extract process data.
+
+        Parameters:
+            file_name (str): Name of the gcode file
+            image_name (str): Name of the image
+
+        Returns:
+            io.TextIOWrapper: Gcode file
+            numpy.ndarray: Image file
+        """
         # Check if directories exists
         cls._check_directories()
         
@@ -18,40 +33,57 @@ class Extract(object):
         cls._check_data(file_name, image_name)
         
         # Extract data
-        # TODO: use constants
-        file = open("{}/data/input/gcode/{}.gcode".format(os.path.dirname(os.getcwd()), file_name), "r")
+        file = open("{}{}{}.{}".format(os.path.dirname(os.getcwd()), gcode_directory_path, file_name, gcode_file_extension), "r")
         
-        image = cv.imread("{}/data/input/image/{}.png".format(os.path.dirname(os.getcwd()), image_name))
+        image = cv.imread("{}{}{}.{}".format(os.path.dirname(os.getcwd()), image_directory_path, image_name, image_file_extension))
         
         return file, image
     
     @classmethod
     def _check_directories(cls):
+        """Method to check if the directories of the input files exists.
+
+        Raises:
+            GCodeDirectoryNotFoundException: Raised when the gcode input directory is not found
+            ImageDirectoryNotFoundException: Raised when the image input directory is not found
+        """
         try:
-            if not os.path.exists(os.path.dirname(os.getcwd()) + "/data/input/gcode"): raise GCodeDirectoryNotFoundException()
-            if not os.path.exists(os.path.dirname(os.getcwd()) + "/data/input/image"): raise ImageDirectoryNotFoundException()
+            if not os.path.exists(os.path.dirname(os.getcwd()) + gcode_directory_path): raise GCodeDirectoryNotFoundException()
+            if not os.path.exists(os.path.dirname(os.getcwd()) + image_directory_path): raise ImageDirectoryNotFoundException()
         except GCodeDirectoryNotFoundException as e:
-            print(e)
+            system_out(e)
         except ImageDirectoryNotFoundException as e:
-            print(e)
+            system_out(e)
     
     @classmethod
     def _check_data(cls, file_name: str, image_name: str):
+        """Method to check if the input files exists.
+
+        Parameters:
+            file_name (str): Name of the gcode file
+            image_name (str): Name of the image
+
+        Raises:
+            GCodeNotFileException: Raised when the input gcode is not a file
+            ExtractGCodeFileException: Raised when the input gcode file cannot be found
+            ImageNotFileException: Raised when the input image is not a file
+            ExtractImageException: Raised when the input image cannot be found
+        """
         try:
-            if os.path.exists(os.path.dirname(os.getcwd()) + "/data/input/gcode/{}.gcode".format(file_name)):
-                if not os.path.isfile(os.path.dirname(os.getcwd()) + "/data/input/gcode/{}.gcode".format(file_name)):
+            if os.path.exists("{}{}{}.{}".format(os.path.dirname(os.getcwd()), gcode_directory_path, file_name, gcode_file_extension)):
+                if not os.path.isfile("{}{}{}.{}".format(os.path.dirname(os.getcwd()), gcode_directory_path, file_name, gcode_file_extension)):
                     raise GCodeNotFileException(file_name)
             else: raise ExtractGCodeFileException(file_name)
             
-            if os.path.exists(os.path.dirname(os.getcwd()) + "/data/input/image/{}.png".format(image_name)):
-                if not os.path.isfile(os.path.dirname(os.getcwd()) + "/data/input/image/{}.png".format(image_name)):
+            if os.path.exists("{}{}{}.{}".format(os.path.dirname(os.getcwd()), image_directory_path, image_name, image_file_extension)):
+                if not os.path.isfile("{}{}{}.{}".format(os.path.dirname(os.getcwd()), image_directory_path, image_name, image_file_extension)):
                     raise ImageNotFileException(image_name)
             else: raise ExtractImageException(image_name)
         except GCodeNotFileException as e:
-            print(e)
+            system_out(e)
         except ExtractGCodeFileException as e:
-            print(e)
+            system_out(e)
         except ImageNotFileException as e:
-            print(e)
+            system_out(e)
         except ExtractImageException as e:
-            print(e)
+            system_out(e)

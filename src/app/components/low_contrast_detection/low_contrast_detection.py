@@ -1,16 +1,31 @@
+import os
+import sys
+import numpy
 import cv2 as cv
 from skimage.exposure import is_low_contrast
 
+# Add the src directory to sys.path
+sys.path.append(os.path.dirname(os.getcwd()))
+
+from app.utils.exceptions.exceptions import *
+from app.common.common import system_out
+
+# TODO: Search for histogram equalization to enhance image contrast if it is too low
 class LowContrastDetection(object):
     
     @classmethod
-    def low_contrast_dectection(cls, image):
-        # Change color channels from BGR -> RGB
-        image = cv.cvtColor(image, cv.COLOR_BGR2RGB)
-        
-        # Convert the image to grayscale
-        gray_image = cv.cvtColor(image, cv.COLOR_RGB2GRAY)
-        
-        # Slightly blur the image and perform edge detection
-        blur_image = cv.GaussianBlur(gray_image, (5, 5), 0)
-        edged = cv.Canny(blur_image, 30, 150)
+    def low_contrast_dectection(cls, image: numpy.ndarray):
+        """Determine if an image is low contrast.
+
+        Parameters:
+            image (numpy.ndarray): Image file
+
+        Raises:
+            LowContrastDetectionException: Raised when an image is low contrast and cannot be used in the pipeline
+        """
+        try:
+            image = cv.cvtColor(image, cv.COLOR_BGR2RGB)
+            
+            if is_low_contrast(image): raise LowContrastDetectionException()
+        except LowContrastDetectionException as e:
+            system_out(e)

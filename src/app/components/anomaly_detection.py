@@ -12,8 +12,12 @@ class AnomalyDetection(object):
     @classmethod
     def anomaly_detection(cls, file_name: str, image_name: str):
         # Extract data
-        Extract.extract_process_data(file_name, image_name)
+        file, image = Extract.extract_process_data(file_name, image_name)
+        
         # Detect low contrast images
+        LowContrastDetection.low_contrast_dectection(image)
+        
+        # Analize gcode file and extract data
         # Create perfect model based on gcode
         # Image segmentation
         # Mask and error detection
