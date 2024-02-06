@@ -1,11 +1,14 @@
 import os
+import io
 import sys
+import numpy
 
 # Add the src directory to sys.path
 sys.path.append(os.path.dirname(os.getcwd()))
 
 from app.extract.extract import Extract
 from app.components.low_contrast_detection.low_contrast_detection import LowContrastDetection
+from app.components.gcode_analizer.gcode_analizer import GCodeAnalizer
 
 class AnomalyDetection(object):
     
@@ -18,7 +21,11 @@ class AnomalyDetection(object):
         LowContrastDetection.low_contrast_dectection(image)
         
         # Analize gcode file and extract data
+        GCodeAnalizer.analize_gcode_file(file)
+        
         # Create perfect model based on gcode
+        
+        
         # Image segmentation
         # Mask and error detection
         # Load results
