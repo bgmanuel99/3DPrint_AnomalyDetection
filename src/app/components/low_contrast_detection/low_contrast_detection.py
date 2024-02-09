@@ -7,15 +7,22 @@ from skimage.exposure import is_low_contrast
 # Add the src directory to sys.path
 sys.path.append(os.path.dirname(os.getcwd()))
 
-from app.utils.exceptions.exceptions import *
+from app.utils.exceptions.low_contrast_exceptions import *
 from app.common.common import system_out
 
 # TODO: Search for histogram equalization to enhance image contrast if it is too low
 class LowContrastDetection(object):
     
+    """This class contains the algorithms to detect low contrast images.
+    
+    Methods:
+        low_contrast_dectection (image: numpy.ndarray):
+            Determines if an image is low contrast.
+    """
+    
     @classmethod
     def low_contrast_dectection(cls, image: numpy.ndarray):
-        """Determine if an image is low contrast.
+        """Determines if an image is low contrast.
 
         Parameters:
             image (numpy.ndarray): Image file

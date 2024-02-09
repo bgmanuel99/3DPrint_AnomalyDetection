@@ -8,11 +8,22 @@ from typing import Tuple
 # Add the src directory to sys.path
 sys.path.append(os.path.dirname(os.getcwd()))
 
-from app.utils.exceptions.exceptions import *
+from app.utils.exceptions.extract_exceptions import *
 from app.common.common import system_out
 from app.utils.constants.constants import *
 
 class Extract(object):
+    
+    """Class for the process data extraction.
+    
+    Methods:
+        extract_process_data (file_name: str, image_name: str): 
+            Method to extract process data.
+        _check_directories: 
+            Private method to check if the directories of the input files exists.
+        _check_data (file_name: str, image_name: str): 
+            Private method to check if the input files exists.
+    """
     
     @classmethod
     def extract_process_data(cls, file_name: str, image_name: str) -> Tuple[io.TextIOWrapper, numpy.ndarray]:
@@ -26,6 +37,7 @@ class Extract(object):
             io.TextIOWrapper: Gcode file
             numpy.ndarray: Image file
         """
+        
         # Check if directories exists
         cls._check_directories()
         
@@ -47,6 +59,7 @@ class Extract(object):
             GCodeDirectoryNotFoundException: Raised when the gcode input directory is not found
             ImageDirectoryNotFoundException: Raised when the image input directory is not found
         """
+        
         try:
             if not os.path.exists(os.path.dirname(os.getcwd()) + gcode_directory_path): raise GCodeDirectoryNotFoundException()
             if not os.path.exists(os.path.dirname(os.getcwd()) + image_directory_path): raise ImageDirectoryNotFoundException()
@@ -69,6 +82,7 @@ class Extract(object):
             ImageNotFileException: Raised when the input image is not a file
             ExtractImageException: Raised when the input image cannot be found
         """
+        
         try:
             if os.path.exists("{}{}{}.{}".format(os.path.dirname(os.getcwd()), gcode_directory_path, file_name, gcode_file_extension)):
                 if not os.path.isfile("{}{}{}.{}".format(os.path.dirname(os.getcwd()), gcode_directory_path, file_name, gcode_file_extension)):

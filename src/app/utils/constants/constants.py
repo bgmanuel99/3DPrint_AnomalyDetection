@@ -6,3 +6,6 @@ image_file_extension: str = "png"
 
 # ******************* Low contrast detection *******************
 fraction_threshold = 0.35
+
+# ******************* Load data *******************
+output_image_directory_path: str = "/data/output/"
