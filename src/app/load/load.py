@@ -1,6 +1,7 @@
 import os
 import sys
 import numpy
+import cv2 as cv
 
 # Add the src directory to sys.path
 sys.path.append(os.path.dirname(os.getcwd()))
@@ -24,10 +25,18 @@ class Load(object):
         """Method to load process data.
 
         Parameters:
-            image (numpy.ndarray): final image with the detected anomalies
+            image (numpy.ndarray): Final image with the detected anomalies
         """
         
         cls._check_directory()
+        
+        cv.imwrite(
+            "{}{}{}.{}".format(
+                os.path.dirname(os.getcwd()), 
+                output_image_directory_path, 
+                "result", 
+                output_image_file_extension), 
+            image)
         
     
     @classmethod
@@ -35,10 +44,14 @@ class Load(object):
         """Method to check if the output directory exists.
 
         Raises:
-            OutputImageDirectoryNotFound: Raised when the image output directory is not found
+            OutputImageDirectoryNotFound: 
+                Raised when the image output directory is not found
         """
         
         try:
-            if not os.path.exists(os.path.dirname(os.getcwd()) + output_image_directory_path): raise OutputImageDirectoryNotFound()
+            if not os.path.exists(
+                os.path.dirname(os.getcwd()) 
+                + output_image_directory_path): 
+                    raise OutputImageDirectoryNotFound()
         except OutputImageDirectoryNotFound as e:
             system_out(e)

@@ -17,22 +17,25 @@ class LowContrastDetection(object):
     
     Methods:
         low_contrast_dectection (image: numpy.ndarray):
-            Determines if an image is low contrast.
+            Method to determines if an image is low contrast.
     """
     
     @classmethod
     def low_contrast_dectection(cls, image: numpy.ndarray):
-        """Determines if an image is low contrast.
+        """Method to determines if an image is low contrast.
 
         Parameters:
             image (numpy.ndarray): Image file
 
         Raises:
-            LowContrastDetectionException: Raised when an image is low contrast and cannot be used in the pipeline
+            LowContrastDetectionException: 
+                Raised when an image is low contrast and cannot be used in the pipeline
         """
+        
         try:
             image = cv.cvtColor(image, cv.COLOR_BGR2RGB)
             
-            if is_low_contrast(image): raise LowContrastDetectionException()
+            if is_low_contrast(image): 
+                raise LowContrastDetectionException()
         except LowContrastDetectionException as e:
             system_out(e)
