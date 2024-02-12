@@ -35,7 +35,7 @@ class AnomalyDetection(object):
         # LowContrastDetection.low_contrast_dectection(image)
 
         # Analize gcode file and extract data
-        # vertices = GCodeAnalizer.extract_vertices(gcode_file)
+        vertices = GCodeAnalizer.extract_vertices(gcode_file)
 
         # Create perfect printed model based on gcode
 
