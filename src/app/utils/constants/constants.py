@@ -24,6 +24,13 @@ height_value_comment: str = ";HEIGHT:"
 input_strand: float = 2.404
 layer_height: float = 0.26
 
+# ******************* Image generator *******************
+nozzle_speed: int = 1 # Max speed for turtle
+nozzle_colors = {
+    "External perimeter": "green",
+    "Internal infill": "red"
+}
+
 # ******************* Load data *******************
 output_image_directory_path: str = "/data/output/"
 output_image_file_extension: str = "png"
