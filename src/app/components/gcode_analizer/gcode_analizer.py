@@ -80,7 +80,7 @@ class GCodeAnalizer(object):
     """
     
     _coords: List[List[object]] = []
-    _retract_length = 0.0
+    _retract_length: float = 0.0
     
     @classmethod
     def extract_data(
@@ -98,6 +98,8 @@ class GCodeAnalizer(object):
         cls._calculate_extrusion_relative_distances()
         
         cls._calculate_width_from_relative_extrusion()
+        
+        cls._coords_to_int()
         
         return cls._coords
     
@@ -164,7 +166,7 @@ class GCodeAnalizer(object):
         gcode_file.close()
         
     @classmethod
-    def _calculate_extrusion_relative_distances(cls):
+    def _calculate_extrusion_relative_distances(cls) -> None:
         """Method to calculate the relative distances for the extrusion data
         """
         
@@ -196,7 +198,7 @@ class GCodeAnalizer(object):
                                 5)
                             
     @classmethod
-    def _calculate_width_from_relative_extrusion(cls):
+    def _calculate_width_from_relative_extrusion(cls) -> None:
         """Method to calculate the filament widths based on the relative 
         extrusion and the coord distances
         """
@@ -221,6 +223,16 @@ class GCodeAnalizer(object):
                         
                         perimeter[1][i][2] = cls._calculate_width(
                             output_strand)
+                        
+    @classmethod
+    def _coords_to_int(cls) -> None:
+        # For each layer of the gcode file
+        for layer in cls._coords:
+            # For each perimeter that comprehends a layer of the gcode file
+            for perimeter in layer[2]:
+                for i in range(len(perimeter[1])):
+                    perimeter[1][i][0] = round(perimeter[1][i][0])
+                    perimeter[1][i][1] = round(perimeter[1][i][1])
     
     @classmethod
     def _calculate_distance(

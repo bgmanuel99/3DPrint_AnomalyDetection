@@ -25,11 +25,11 @@ input_strand: float = 2.404
 layer_height: float = 0.26
 
 # ******************* Image generator *******************
-nozzle_speed: int = 1 # Max speed for turtle
-nozzle_colors = {
-    "External perimeter": "green",
-    "Internal infill": "red"
+perimeter_colors = {
+    "External perimeter": (0, 255, 0),
+    "Internal infill": (255, 0, 0)
 }
+hot_bed_shape: tuple[int, int] = (250, 250)
 
 # ******************* Load data *******************
 output_image_directory_path: str = "/data/output/"

@@ -9,8 +9,8 @@ from app.extract.extract import Extract
 from app.components.gcode_analizer.gcode_analizer import GCodeAnalizer
 from app.components.low_contrast_detection.low_contrast_detection import (
     LowContrastDetection)
-from app.components.generators.image_generator.turtle_image_generator import (
-    TurtleImageGenerator)
+from app.components.generators.image_generator.image_generator import (
+    ImageGenerator)
 
 class AnomalyDetection(object):
 
@@ -42,7 +42,7 @@ class AnomalyDetection(object):
         coords: List[List[object]] = GCodeAnalizer.extract_data(gcode_file)
 
         # Create perfect printed model based on gcode information
-        perfect_model = TurtleImageGenerator.generate_image(coords)
+        # perfect_model = ImageGenerator.generate_image(coords)
         
         # Image segmentation
         # Mask and error detection
