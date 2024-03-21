@@ -7,6 +7,8 @@ sys.path.append(os.path.dirname(os.getcwd()))
 from app.extract.extract import Extract
 from app.components.gcode_analizer.gcode_analizer import GCodeAnalizer
 from app.components.low_contrast_detection.low_contrast_detection import LowContrastDetection
+from app.components.image_segmentation.image_segmentation import (
+    ImageSegmetation)
 
 class AnomalyDetection(object):
 
@@ -35,10 +37,12 @@ class AnomalyDetection(object):
         LowContrastDetection.low_contrast_dectection(image)
 
         # Analize gcode file and extract data
-        coords = GCodeAnalizer.extract_data(gcode_file)
+        #coords = GCodeAnalizer.extract_data(gcode_file)
 
         # Create perfect printed model based on gcode information
 
         # Image segmentation
+        segmented_image = ImageSegmetation.segment_image(image)
+        
         # Mask and error detection
         # Load results
