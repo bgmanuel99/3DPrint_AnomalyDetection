@@ -36,13 +36,14 @@ class AnomalyDetection(object):
         # Detect low contrast images
         LowContrastDetection.low_contrast_dectection(image)
 
+        # Image segmentation
+        segmented_image, pixelsPerMetric = ImageSegmetation.segment_image(
+            image)
+        
         # Analize gcode file and extract data
         #coords = GCodeAnalizer.extract_data(gcode_file)
 
         # Create perfect printed model based on gcode information
-
-        # Image segmentation
-        segmented_image = ImageSegmetation.segment_image(image)
         
         # Mask and error detection
         # Load results

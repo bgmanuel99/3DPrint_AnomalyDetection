@@ -179,7 +179,7 @@ class GCodeAnalizer(object):
                     if perimeter[1][i][2] == 0.0:
                         continue
                     else:
-                        # If the next coord for the actual actual one is the 
+                        # If the next coord for the actual one is the 
                         # initial coord then use the retract length to 
                         # calculate relative distance
                         if perimeter[1][i-1][2] == 0.0:
@@ -188,7 +188,7 @@ class GCodeAnalizer(object):
                                 - cls._retract_length, 
                                 5)
                         else:
-                            # If there are to coords with extrusion data use
+                            # If there are two coords with extrusion data use
                             # both to calculate the relative distance
                             perimeter[1][i][2] = round(
                                 perimeter[1][i][2] 
@@ -209,6 +209,7 @@ class GCodeAnalizer(object):
                     if perimeter[1][i][2] == 0.0:
                         continue
                     else:
+                        #TODO: Use from scipy.spatial import distance as dist
                         distance = cls._calculate_distance(
                             perimeter[1][i-1][0],
                             perimeter[1][i-1][1],
