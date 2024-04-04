@@ -31,7 +31,7 @@ class ImageSegmetation(object):
         
         cnts = [c for c in cnts if cv.contourArea(c) > 1000]
         
-        pixelsPerMetric = cls.getPixelsPerMetric(cnts)
+        pixelsPerMetric = cls.get_pixels_per_metric(cnts)
         
         external_contour = np.zeros(image.shape[0:2], dtype=np.uint8)
         filled_contour = external_contour.copy()
@@ -56,11 +56,11 @@ class ImageSegmetation(object):
         return masked, pixelsPerMetric
     
     @classmethod
-    def midPoint(cls, ptA, ptB):
+    def mid_point(cls, ptA, ptB):
         return ((ptA[0] + ptB[0]) * 0.5, (ptA[1] + ptB[1]) * 0.5)
     
     @classmethod
-    def getPixelsPerMetric(cls, cnts):
+    def get_pixels_per_metric(cls, cnts):
         box = cv.minAreaRect(cnts[0])
         box = cv.boxPoints(box)
         box = np.array(box, dtype="int")
@@ -68,8 +68,8 @@ class ImageSegmetation(object):
     
         (tl, tr, br, bl) = box
         
-        (tlblX, tlblY) = cls.midPoint(tl, bl)
-        (trbrX, trbrY) = cls.midPoint(tr, br)
+        (tlblX, tlblY) = cls.mid_point(tl, bl)
+        (trbrX, trbrY) = cls.mid_point(tr, br)
         
         dB = dist.euclidean((tlblX, tlblY), (trbrX, trbrY))
         
