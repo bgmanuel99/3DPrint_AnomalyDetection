@@ -267,7 +267,8 @@ class GCodeAnalizer(object):
     def _calculate_width(
             cls,
             output_strand: float) -> float:
-        """Method to calculate the width of the filament. The formula to calculate it is:
+        """Method to calculate the width of the filament. The formula to 
+        calculate it is:
             output_strand = layer_height * (layer_width - layer_height) + 
                 Pi * (layer_height / 2) ^ 2
         Solving the width of the equation:

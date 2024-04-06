@@ -1,12 +1,14 @@
 import os
 import sys
+import numpy as np
 
 # Add the src directory to sys.path
 sys.path.append(os.path.dirname(os.getcwd()))
 
 from app.extract.extract import Extract
 from app.components.gcode_analizer.gcode_analizer import GCodeAnalizer
-from app.components.low_contrast_detection.low_contrast_detection import LowContrastDetection
+from app.components.low_contrast_detection.low_contrast_detection import (
+    LowContrastDetection)
 from app.components.image_segmentation.image_segmentation import (
     ImageSegmetation)
 
@@ -37,8 +39,10 @@ class AnomalyDetection(object):
         LowContrastDetection.low_contrast_dectection(image)
 
         # Image segmentation
-        segmented_image, pixelsPerMetric = ImageSegmetation.segment_image(
-            image)
+        segmented_image: np.ndarray = ImageSegmetation.segment_image(image)
+        
+        # Pixels per metric
+        pixelsPerMetric: float = ImageSegmetation.get_pixels_per_metric()
         
         # Analize gcode file and extract data
         #coords = GCodeAnalizer.extract_data(gcode_file)
