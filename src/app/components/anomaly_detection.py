@@ -25,7 +25,11 @@ class AnomalyDetection(object):
     """
 
     @classmethod
-    def anomaly_detection(cls, gcode_name: str, image_name: str):
+    def anomaly_detection(
+            cls, 
+            gcode_name: str, 
+            image_name: str, 
+            reference_object_width: float):
         """This is the main algorithm to detect 3d printing anomalies in images.
 
         Parameters:
@@ -45,13 +49,19 @@ class AnomalyDetection(object):
         segmented_image: np.ndarray = ImageSegmetation.segment_image(image)
         
         # Pixels per metric
-        pixelsPerMetric: float = ImageSegmetation.get_pixels_per_metric()
+        pixels_per_metric: float = ImageSegmetation.get_pixels_per_metric(
+            reference_object_width)
         
         # Analize gcode file and extract data
         coords: List[List[object]] = GCodeAnalizer.extract_data(gcode_file)
+        
+        print(coords)
 
         # Create perfect printed model based on gcode information
-        # perfect_model = ImageGenerator.generate_image(coords)
+        perfect_model = ImageGenerator.generate_image(
+            coords, 
+            pixels_per_metric, 
+            reference_object_width)
         
         # Image segmentation
         # Mask and error detection

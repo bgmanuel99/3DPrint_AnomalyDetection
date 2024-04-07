@@ -6,7 +6,9 @@ from components.anomaly_detection import AnomalyDetection
 if __name__ == "__main__":
     match sys.argv[1]:
         case "anomaly_detection":
-            AnomalyDetection.anomaly_detection(gcode_name=sys.argv[2], 
-                                               image_name=sys.argv[3])
+            AnomalyDetection.anomaly_detection(
+                gcode_name=sys.argv[2], 
+                image_name=sys.argv[3], 
+                reference_object_width=float(sys.argv[4]))
         case "gcode_generator":
             pass

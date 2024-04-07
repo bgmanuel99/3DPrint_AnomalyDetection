@@ -99,8 +99,6 @@ class GCodeAnalizer(object):
         
         cls._calculate_width_from_relative_extrusion()
         
-        cls._coords_to_int()
-        
         return cls._coords
     
     @classmethod
@@ -224,16 +222,6 @@ class GCodeAnalizer(object):
                         
                         perimeter[1][i][2] = cls._calculate_width(
                             output_strand)
-                        
-    @classmethod
-    def _coords_to_int(cls) -> None:
-        # For each layer of the gcode file
-        for layer in cls._coords:
-            # For each perimeter that comprehends a layer of the gcode file
-            for perimeter in layer[2]:
-                for i in range(len(perimeter[1])):
-                    perimeter[1][i][0] = round(perimeter[1][i][0])
-                    perimeter[1][i][1] = round(perimeter[1][i][1])
     
     @classmethod
     def _calculate_distance(

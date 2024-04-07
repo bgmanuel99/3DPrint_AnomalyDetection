@@ -22,15 +22,19 @@ class ImageGenerator(object):
     @classmethod
     def generate_image(
             cls, 
-            coords: List[List[object]]) -> np.ndarray:
+            coords: List[List[object]],
+            pixels_per_metric: float, 
+            reference_object_width: float) -> np.ndarray:
         """Method to generate the image of the perfect model
 
         Parameters:
             coords (List[List[object]]): 
                 Coordinates to create the image of the perfect model for the 
                 3D printed object
+            pixels_per_metric (float): 
+                
         """
-        print(coords)
+        
         blank_image = np.zeros(
             shape=hot_bed_shape, 
             dtype=np.float32)

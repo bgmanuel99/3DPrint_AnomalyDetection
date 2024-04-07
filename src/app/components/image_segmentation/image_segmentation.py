@@ -9,7 +9,7 @@ from scipy.spatial import distance as dist
 class ImageSegmetation(object):
     
     """This class contains methods to segmentated the original image with the
-    3D printed and reference objects and to get a pixels per metrics value 
+    3D printed and reference objects and to get a pixels per metric value 
     based on the reference object
 
     Methods:
@@ -139,7 +139,7 @@ class ImageSegmetation(object):
     def _mid_point(cls, ptA: np.ndarray, ptB: np.ndarray) -> tuple[np.float64]:
         """Method to calculate the mid points of an edge
 
-        Args:
+        Parameters:
             ptA (np.ndarray): First set of 2D coordinates
             ptB (np.ndarray): Second set of 2D coordinates
 
@@ -150,12 +150,16 @@ class ImageSegmetation(object):
         return ((ptA[0] + ptB[0]) * 0.5, (ptA[1] + ptB[1]) * 0.5)
     
     @classmethod
-    def get_pixels_per_metric(cls) -> float:
+    def get_pixels_per_metric(cls, reference_object_width: float) -> float:
         """Method to obtain the pixels per metric variable based on a 
         reference object in the original image
+        
+        Parameters:
+            reference_object_width (float): 
+                Width of the reference object in the original image
 
         Returns:
-            float: Pixels per metric variable
+            float: Pixels per metric gicen by the width of the reference object
         """
         
         box = cv.minAreaRect(cls._cnts[0])
@@ -170,4 +174,4 @@ class ImageSegmetation(object):
         
         dB = dist.euclidean((tlblX, tlblY), (trbrX, trbrY))
         
-        return dB / 1.874
+        return dB / reference_object_width

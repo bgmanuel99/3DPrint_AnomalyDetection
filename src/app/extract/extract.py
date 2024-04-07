@@ -3,7 +3,6 @@ import io
 import sys
 import numpy
 import cv2 as cv
-from typing import Tuple
 
 # Add the src directory to sys.path
 sys.path.append(os.path.dirname(os.getcwd()))
@@ -34,7 +33,7 @@ class Extract(object):
     def extract_process_data(
             cls, 
             gcode_name: str, 
-            image_name: str) -> Tuple[io.TextIOWrapper, numpy.ndarray]:
+            image_name: str) -> tuple[io.TextIOWrapper, numpy.ndarray]:
         """Method to extract process data.
 
         Parameters:
