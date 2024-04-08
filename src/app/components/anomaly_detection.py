@@ -7,13 +7,10 @@ from typing import List
 sys.path.append(os.path.dirname(os.getcwd()))
 
 from app.extract.extract import Extract
-from app.components.gcode_analizer.gcode_analizer import GCodeAnalizer
-from app.components.low_contrast_detection.low_contrast_detection import (
-    LowContrastDetection)
-from app.components.image_segmentation.image_segmentation import (
-    ImageSegmetation)
-from app.components.generators.image_generator.image_generator import (
-    ImageGenerator)
+from app.components.gcode_analizer import GCodeAnalizer
+from app.components.low_contrast_detection import LowContrastDetection
+from app.components.image_segmentation import ImageSegmetation
+from app.components.image_generator import ImageGenerator
 
 class AnomalyDetection(object):
 
@@ -63,6 +60,5 @@ class AnomalyDetection(object):
             pixels_per_metric, 
             reference_object_width)
         
-        # Image segmentation
         # Mask and error detection
         # Load results

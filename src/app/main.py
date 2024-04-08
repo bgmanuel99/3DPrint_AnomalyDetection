@@ -10,5 +10,3 @@ if __name__ == "__main__":
                 gcode_name=sys.argv[2], 
                 image_name=sys.argv[3], 
                 reference_object_width=float(sys.argv[4]))
-        case "gcode_generator":
-            pass
