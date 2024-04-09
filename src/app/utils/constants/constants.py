@@ -29,7 +29,6 @@ perimeter_colors = {
     "External perimeter": (0, 255, 0),
     "Internal infill": (255, 0, 0)
 }
-hot_bed_shape: tuple[int, int] = (250, 250)
 
 # ******************* Load data *******************
 output_image_directory_path: str = "/data/output/"

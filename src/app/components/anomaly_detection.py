@@ -56,6 +56,7 @@ class AnomalyDetection(object):
 
         # Create perfect printed model based on gcode information
         perfect_model = ImageGenerator.generate_image(
+            segmented_image, 
             coords, 
             pixels_per_metric, 
             reference_object_width)

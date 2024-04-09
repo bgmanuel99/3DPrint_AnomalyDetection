@@ -5,6 +5,7 @@ from typing import List
 from imutils import contours
 from imutils import perspective
 from scipy.spatial import distance as dist
+import matplotlib.pyplot as plt
 
 class ImageSegmetation(object):
     
@@ -47,6 +48,9 @@ class ImageSegmetation(object):
         
         # Segment the original image
         segmented: np.ndarray = cls._get_complete_segmented_image(image)
+        
+        plt.imshow(segmented, cmap="gray")
+        plt.show()
         
         # Obtain the contours of the object in the image
         cls._get_contours(segmented)
@@ -129,9 +133,15 @@ class ImageSegmetation(object):
         # getting rid of the reference object of the original image
         masked = cv.bitwise_and(image, image, mask=full_contour)
         
+        plt.imshow(masked, cmap="gray")
+        plt.show()
+        
         # This second bitwise operation is to separate the 3d printed object
         # forground from the background
         masked = cv.bitwise_and(masked, masked, mask=segmented)
+        
+        plt.imshow(masked, cmap="gray")
+        plt.show()
         
         return masked
     
@@ -168,10 +178,11 @@ class ImageSegmetation(object):
         box = perspective.order_points(box)
     
         (tl, tr, br, bl) = box
-        
         (tlblX, tlblY) = cls._mid_point(tl, bl)
         (trbrX, trbrY) = cls._mid_point(tr, br)
         
         dB = dist.euclidean((tlblX, tlblY), (trbrX, trbrY))
         
-        return dB / reference_object_width
+        print(dB)
+        
+        return dB
