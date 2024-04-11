@@ -44,13 +44,8 @@ class ImageGenerator(object):
             # For each perimeter that comprehends a layer
             max_coord = max([number for sublist in layer[2] for subsublist in sublist[1] for number in subsublist[0:2]])
             min_coord = min([number for sublist in layer[2] for subsublist in sublist[1] for number in subsublist[0:2]])
-            
-        print(max_coord)
-        print(min_coord)
 
         mean_coord = (max_coord + min_coord) / 2
-        
-        print(mean_coord)
         
         # For each layer
         for layer in coords:
@@ -59,13 +54,8 @@ class ImageGenerator(object):
                 for i in range(len(perimeter[1])):
                     perimeter[1][i][0] = perimeter[1][i][0] - mean_coord
                     perimeter[1][i][1] = perimeter[1][i][1] - mean_coord
-                    
-        print(coords)
         
-        middle_coord_image = (segmented_image.shape[0]/2, segmented_image.shape[1]/2)
-        
-        print(segmented_image.shape)
-        print(middle_coord_image)
+        middle_coord_image = cls._get_middle_coords(segmented_image)
         
         blank_image = np.zeros(
             shape=segmented_image.shape, 
@@ -79,23 +69,23 @@ class ImageGenerator(object):
                     cv.line(
                         blank_image, 
                         pt1=(
-                            cls._metric_to_pixels(
+                            int(middle_coord_image[1] + cls._metric_to_pixels(
                                 perimeter[1][i][0], 
                                 pixels_per_metric, 
-                                reference_object_width), 
-                            cls._metric_to_pixels(
+                                reference_object_width)), 
+                            int(middle_coord_image[0] + cls._metric_to_pixels(
                                 perimeter[1][i][1], 
                                 pixels_per_metric, 
-                                reference_object_width)),
+                                reference_object_width))),
                         pt2=(
-                            cls._metric_to_pixels(
+                            int(middle_coord_image[1] + cls._metric_to_pixels(
                                 perimeter[1][i+1][0], 
                                 pixels_per_metric, 
-                                reference_object_width), 
-                            cls._metric_to_pixels(
+                                reference_object_width)), 
+                            int(middle_coord_image[0] + cls._metric_to_pixels(
                                 perimeter[1][i+1][1], 
                                 pixels_per_metric, 
-                                reference_object_width)), 
+                                reference_object_width))), 
                         color=perimeter_colors[perimeter[0]], 
                         thickness=1
                     )
@@ -103,12 +93,7 @@ class ImageGenerator(object):
         plt.imshow(blank_image, cmap="gray")
         plt.show()
         
-        # cv.imshow("image", blank_image)
-        # k = cv.waitKey(0)
-        # if k == 27:         # wait for ESC key to exit
-        #     cv.destroyAllWindows()
-        
-        blank_image
+        return blank_image
             
     @classmethod
     def _metric_to_pixels(
@@ -117,3 +102,7 @@ class ImageGenerator(object):
         pixels_per_metric: float, 
         reference_object_width: float) -> int:
         return int(coord * pixels_per_metric / reference_object_width)
+    
+    @classmethod
+    def _get_middle_coords(cls, image):
+        return (image.shape[0]/2, image.shape[1]/2)
