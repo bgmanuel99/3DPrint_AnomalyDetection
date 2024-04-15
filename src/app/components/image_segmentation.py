@@ -160,13 +160,30 @@ class ImageSegmetation(object):
         return ((ptA[0] + ptB[0]) * 0.5, (ptA[1] + ptB[1]) * 0.5)
     
     @classmethod
-    def get_pixels_per_metric(cls, reference_object_width: float) -> float:
+    def get_3d_object_middle_coords(cls):
+        box = cv.minAreaRect(cls._cnts[1])
+        box = cv.boxPoints(box)
+        box = np.array(box, dtype="int")
+        box = perspective.order_points(box)
+    
+        (tl, tr, br, bl) = box
+        
+        print(tl, tr, br, bl)
+        
+        (tlblX, tlblY) = cls._mid_point(tl, bl)
+        print((tlblX, tlblY))
+        (trbrX, trbrY) = cls._mid_point(tr, br)
+        print((trbrX, trbrY))
+        
+        (midPointX, midPointY) = cls._mid_point((tlblX, tlblY), (trbrX, trbrY))
+        print((midPointX, midPointY))
+        
+        return (midPointX, midPointY)
+    
+    @classmethod
+    def get_pixels_per_metric(cls) -> float:
         """Method to obtain the pixels per metric variable based on a 
         reference object in the original image
-        
-        Parameters:
-            reference_object_width (float): 
-                Width of the reference object in the original image
 
         Returns:
             float: Pixels per metric gicen by the width of the reference object
@@ -182,7 +199,5 @@ class ImageSegmetation(object):
         (trbrX, trbrY) = cls._mid_point(tr, br)
         
         dB = dist.euclidean((tlblX, tlblY), (trbrX, trbrY))
-        
-        print(dB)
         
         return dB

@@ -25,10 +25,6 @@ input_strand: float = 2.404
 layer_height: float = 0.26
 
 # ******************* Image generator *******************
-perimeter_colors = {
-    "External perimeter": (0, 255, 0),
-    "Internal infill": (255, 0, 0)
-}
 
 # ******************* Load data *******************
 output_image_directory_path: str = "/data/output/"

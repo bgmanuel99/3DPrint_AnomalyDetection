@@ -11,6 +11,7 @@ from app.components.gcode_analizer import GCodeAnalizer
 from app.components.low_contrast_detection import LowContrastDetection
 from app.components.image_segmentation import ImageSegmetation
 from app.components.image_generator import ImageGenerator
+from app.components.error_detection import ErrorDetection
 
 class AnomalyDetection(object):
 
@@ -46,20 +47,26 @@ class AnomalyDetection(object):
         segmented_image: np.ndarray = ImageSegmetation.segment_image(image)
         
         # Pixels per metric
-        pixels_per_metric: float = ImageSegmetation.get_pixels_per_metric(
-            reference_object_width)
+        pixels_per_metric: float = ImageSegmetation.get_pixels_per_metric()
         
+        # Middle coord of the 3d printed object in the original image
+        middle_coords_3d_object = ImageSegmetation \
+            .get_3d_object_middle_coords()
+        
+        print(middle_coords_3d_object)
+                
         # Analize gcode file and extract data
         coords: List[List[object]] = GCodeAnalizer.extract_data(gcode_file)
-        
-        print(coords)
 
         # Create perfect printed model based on gcode information
         perfect_model = ImageGenerator.generate_image(
             segmented_image, 
+            middle_coords_3d_object, 
             coords, 
             pixels_per_metric, 
             reference_object_width)
         
         # Mask and error detection
+        ErrorDetection.detect_errors(segmented_image, perfect_model)
+        
         # Load results
