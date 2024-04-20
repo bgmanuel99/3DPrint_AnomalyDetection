@@ -50,10 +50,8 @@ class AnomalyDetection(object):
         pixels_per_metric: float = ImageSegmetation.get_pixels_per_metric()
         
         # Middle coord of the 3d printed object in the original image
-        middle_coords_3d_object = ImageSegmetation \
+        middle_coords_3d_object: tuple[float, float] = ImageSegmetation \
             .get_3d_object_middle_coords()
-        
-        print(middle_coords_3d_object)
                 
         # Analize gcode file and extract data
         coords: List[List[object]] = GCodeAnalizer.extract_data(gcode_file)

@@ -4,7 +4,6 @@ import sys
 import math
 from typing import List
 
-# Add the src directory to sys.path
 sys.path.append(os.path.dirname(os.getcwd()))
 
 from app.utils.constants.constants import *
@@ -91,22 +90,16 @@ class GCodeAnalizer(object):
 
         Parameters:
             gcode_file (io.TextIOWrapper): File with gcode information
+            
+        Returns:
+            List[List[object]]: Real coordinates of the 3d printed object
         """
         
         cls._extract_structured_data(gcode_file)
         
-        print("after extracting data")
-        print(cls._coords)
-        
         cls._calculate_extrusion_relative_distances()
         
-        print("after calculating extrusion relative distances")
-        print(cls._coords)
-        
-        print("after calculating width")
         cls._calculate_width_from_relative_extrusion()
-        
-        print(cls._coords)
         
         return cls._coords
     
@@ -192,13 +185,15 @@ class GCodeAnalizer(object):
                         # initial coord then use the retract length to 
                         # calculate relative distance
                         if perimeter[1][i-1][2] == 0.0:
-                            perimeter[1][i][2] = (perimeter[1][i][2] 
-                                                  - cls._retract_length)
+                            perimeter[1][i][2] = round(perimeter[1][i][2] 
+                                                       - cls._retract_length,
+                                                       2)
                         else:
                             # If there are two coords with extrusion data use
                             # both to calculate the relative distance
-                            perimeter[1][i][2] = (perimeter[1][i][2] 
-                                                  - perimeter[1][i-1][2])
+                            perimeter[1][i][2] = round(perimeter[1][i][2] 
+                                                       - perimeter[1][i-1][2], 
+                                                       2)
                             
     @classmethod
     def _calculate_width_from_relative_extrusion(cls) -> None:
@@ -287,9 +282,10 @@ class GCodeAnalizer(object):
             float: Filament width
         """
         
-        return ((output_strand - math.pi * math.pow(layer_height / 2, 2)) 
+        return round((output_strand - math.pi * math.pow(layer_height / 2, 2)) 
                 / layer_height 
-                + layer_height)
+                + layer_height, 
+                2)
         
     @classmethod
     def _is_new_layer(

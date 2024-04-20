@@ -28,6 +28,9 @@ class ImageSegmetation(object):
             Private method to obtain only the 3d printed object segmentation through its contour
         _mid_point (ptA: np.ndarray, ptB: np.ndarray):
             Private method to calculate the mid points of an edge
+        get_3d_object_middle_coords ():
+            Method to obtain the middle coordinates of the 3d object in the 
+            original image
         get_pixels_per_metric ():
             Method to obtain the pixels per metric variable based on a 
             reference object in the original image
@@ -125,6 +128,9 @@ class ImageSegmetation(object):
         
         cv.drawContours(external_contour, [cls._cnts[1]], -1, (255, 255, 255), 2)
         
+        plt.imshow(external_contour, cmap="gray")
+        plt.show()
+        
         cv.fillPoly(filled_contour, [cls._cnts[1]], (255, 255, 255))
         
         full_contour = external_contour + filled_contour
@@ -160,7 +166,15 @@ class ImageSegmetation(object):
         return ((ptA[0] + ptB[0]) * 0.5, (ptA[1] + ptB[1]) * 0.5)
     
     @classmethod
-    def get_3d_object_middle_coords(cls):
+    def get_3d_object_middle_coords(cls) -> tuple[float, float]:
+        """Method to obtain the middle coordinates of the 3d object in the 
+        original image
+
+        Returns:
+            tuple[float, float]: First float is the X coordinate and the 
+            second float is the Y coordinate
+        """
+        
         box = cv.minAreaRect(cls._cnts[1])
         box = cv.boxPoints(box)
         box = np.array(box, dtype="int")
@@ -168,15 +182,10 @@ class ImageSegmetation(object):
     
         (tl, tr, br, bl) = box
         
-        print(tl, tr, br, bl)
-        
         (tlblX, tlblY) = cls._mid_point(tl, bl)
-        print((tlblX, tlblY))
         (trbrX, trbrY) = cls._mid_point(tr, br)
-        print((trbrX, trbrY))
         
         (midPointX, midPointY) = cls._mid_point((tlblX, tlblY), (trbrX, trbrY))
-        print((midPointX, midPointY))
         
         return (midPointX, midPointY)
     
@@ -186,7 +195,8 @@ class ImageSegmetation(object):
         reference object in the original image
 
         Returns:
-            float: Pixels per metric gicen by the width of the reference object
+            float: Pixels per metric value given by the width of the reference 
+            object
         """
         
         box = cv.minAreaRect(cls._cnts[0])
