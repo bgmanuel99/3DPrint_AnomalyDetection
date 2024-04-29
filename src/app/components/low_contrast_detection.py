@@ -1,7 +1,7 @@
 import os
 import sys
+import cv2
 import numpy
-import cv2 as cv
 from skimage.exposure import is_low_contrast
 
 # Add the src directory to sys.path
@@ -33,7 +33,7 @@ class LowContrastDetection(object):
         """
         
         try:
-            image = cv.cvtColor(image, cv.COLOR_BGR2RGB)
+            image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
             
             if is_low_contrast(image): 
                 raise LowContrastDetectionException()

@@ -1,7 +1,7 @@
 import os
 import sys
+import cv2
 import numpy
-import cv2 as cv
 
 # Add the src directory to sys.path
 sys.path.append(os.path.dirname(os.getcwd()))
@@ -30,7 +30,7 @@ class Load(object):
         
         cls._check_directory()
         
-        cv.imwrite(
+        cv2.imwrite(
             "{}{}{}.{}".format(
                 os.path.dirname(os.getcwd()), 
                 output_image_directory_path, 

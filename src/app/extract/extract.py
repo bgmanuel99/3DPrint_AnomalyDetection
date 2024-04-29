@@ -1,8 +1,8 @@
 import os
 import io
 import sys
-import numpy
-import cv2 as cv
+import cv2
+import numpy as np
 
 # Add the src directory to sys.path
 sys.path.append(os.path.dirname(os.getcwd()))
@@ -33,7 +33,7 @@ class Extract(object):
     def extract_process_data(
             cls, 
             gcode_name: str, 
-            image_name: str) -> tuple[io.TextIOWrapper, numpy.ndarray]:
+            image_name: str) -> tuple[io.TextIOWrapper, np.ndarray]:
         """Method to extract process data.
 
         Parameters:
@@ -66,7 +66,7 @@ class Extract(object):
         # Extract data
         gcode_file = open(gcode_path, "r")
         
-        image = cv.imread(image_path)
+        image = cv2.imread(image_path)
         
         return gcode_file, image
     
@@ -90,9 +90,8 @@ class Extract(object):
                 os.path.dirname(os.getcwd()) 
                 + input_image_directory_path): 
                     raise InputImageDirectoryNotFoundException()
-        except InputGCodeDirectoryNotFoundException as e:
-            system_out(e)
-        except InputImageDirectoryNotFoundException as e:
+        except (
+            InputGCodeDirectoryNotFoundException, InputImageDirectoryNotFoundException) as e:
             system_out(e)
     
     @classmethod
@@ -133,11 +132,9 @@ class Extract(object):
                     raise ImageNotFileException(image_name)
             else: 
                 raise ExtractImageException(image_name)
-        except GCodeNotFileException as e:
-            system_out(e)
-        except ExtractGCodeFileException as e:
-            system_out(e)
-        except ImageNotFileException as e:
-            system_out(e)
-        except ExtractImageException as e:
+        except (
+            GCodeNotFileException, 
+            ExtractGCodeFileException, 
+            ImageNotFileException, 
+            ExtractImageException) as e:
             system_out(e)

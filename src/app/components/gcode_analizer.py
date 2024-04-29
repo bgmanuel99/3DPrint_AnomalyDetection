@@ -101,6 +101,8 @@ class GCodeAnalizer(object):
         
         cls._calculate_width_from_relative_extrusion()
         
+        print(cls._coords)
+        
         return cls._coords
     
     @classmethod
@@ -185,9 +187,10 @@ class GCodeAnalizer(object):
                         # initial coord then use the retract length to 
                         # calculate relative distance
                         if perimeter[1][i-1][2] == 0.0:
-                            perimeter[1][i][2] = round(perimeter[1][i][2] 
-                                                       - cls._retract_length,
-                                                       2)
+                            if perimeter[1][i][2] > cls._retract_length: 
+                                perimeter[1][i][2] = round(perimeter[1][i][2] 
+                                                        - cls._retract_length,
+                                                        2)
                         else:
                             # If there are two coords with extrusion data use
                             # both to calculate the relative distance
@@ -448,17 +451,28 @@ class GCodeAnalizer(object):
                 initial coord
         """
         
-        if (all(char in line for char in gcode_initial_position_symbols)
+        if (all([char in line for char in gcode_initial_position_symbols])
+                and gcode_extrusion_symbol not in line
                 and not wiping
                 and gcode_comment_symbol not in line
                 and not line.startswith(gcode_comment_symbol)):
-            gcode_position = (line
-                .strip()
-                .replace(gcode_initial_position_symbols[0], "")
-                .replace(gcode_initial_position_symbols[1], "")
-                .replace(gcode_initial_position_symbols[2], "")
-                .replace(gcode_initial_position_symbols[3], "0")
-                .split())
+            if gcode_feed_rate_symbol in line:
+                gcode_position = (line
+                    .strip()
+                    .replace(gcode_initial_position_symbols[0], "")
+                    .replace(gcode_initial_position_symbols[1], "")
+                    .replace(gcode_initial_position_symbols[2], "")
+                    .replace(gcode_feed_rate_symbol, "0")
+                    .split())
+            else:
+                print("here")
+                gcode_position = (line
+                    .strip()
+                    .replace(gcode_initial_position_symbols[0], "")
+                    .replace(gcode_initial_position_symbols[1], "")
+                    .replace(gcode_initial_position_symbols[2], "")
+                    .split())
+                gcode_position.append(0.0)
             
             initial_coords = list(map(float, gcode_position))
             
@@ -485,7 +499,7 @@ class GCodeAnalizer(object):
             bool: Boolean to acknowledge it is a new coord
         """
         
-        if (all(char in line for char in gcode_position_symbols)
+        if (all([char in line for char in gcode_position_symbols])
                 and not wiping
                 and gcode_comment_symbol not in line
                 and not line.startswith(gcode_comment_symbol)):
