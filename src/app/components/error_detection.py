@@ -4,6 +4,7 @@ import cv2
 import copy
 import imutils
 import numpy as np
+from imutils import contours
 from skimage.metrics import structural_similarity
 
 # Add the src directory to sys.path
@@ -14,7 +15,11 @@ from app.common.common import print_image
 class ErrorDetection(object):
     
     @classmethod
-    def detect_errors(cls, segmented_image, perfect_models, ppm_degree_offset):
+    def detect_errors(
+            cls, 
+            segmented_image, 
+            perfect_models, 
+            ppm_degree_offset):
         
         ssim_max_score = 0
         ssim_max_score_index = 0
@@ -73,6 +78,27 @@ class ErrorDetection(object):
 
         #Display image with circle around defect
         print_image("im_with_keypoints", im_with_keypoints, 600, True)
+        
+        cnts = cv2.findContours(
+            thresh, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+        cnts = imutils.grab_contours(cnts)
+        
+        filled_contours = np.zeros(segmented_image.shape, dtype=np.uint8)
+        
+        for c in cnts:
+            if cv2.contourArea(c) > 200:
+                cv2.fillPoly(filled_contours, [c], (251, 4, 131))
+        
+        print_image("Error contours", filled_contours, 600, True)
+        
+        original_image_with_errors = cv2.add(
+            segmented_image, filled_contours)
+        
+        print_image(
+            "Original image with errors", 
+            original_image_with_errors, 
+            600, 
+            True)
         
     @classmethod
     def detect_error(cls, imageA, imageB):
