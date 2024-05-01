@@ -3,6 +3,7 @@ import io
 import sys
 import math
 from typing import List
+from scipy.spatial import distance as dist
 
 sys.path.append(os.path.dirname(os.getcwd()))
 
@@ -25,13 +26,6 @@ class GCodeAnalizer(object):
         _calculate_width_from_relative_extrusion:
             Private method to calculate the filament widths based on the 
             relative extrusion and the coord distances
-        _calculate_distance (
-                cls, 
-                x1: float, 
-                y1: float,
-                x2: float,
-                y2: float):
-            Private method to calculate the distance between two points
         _calculate_output_strand (
                 cls,
                 extrusion_data: float,
@@ -210,12 +204,9 @@ class GCodeAnalizer(object):
                     if perimeter[1][i][2] == 0.0:
                         continue
                     else:
-                        #TODO: Use from scipy.spatial import distance as dist
-                        distance = cls._calculate_distance(
-                            perimeter[1][i-1][0],
-                            perimeter[1][i-1][1],
-                            perimeter[1][i][0],
-                            perimeter[1][i][1])
+                        distance = dist.euclidean(
+                            (perimeter[1][i-1][0], perimeter[1][i-1][1]),
+                            (perimeter[1][i][0], perimeter[1][i][1]))
                         
                         output_strand = cls._calculate_output_strand(
                             perimeter[1][i][2],
@@ -223,27 +214,6 @@ class GCodeAnalizer(object):
                         
                         perimeter[1][i][2] = cls._calculate_width(
                             output_strand)
-    
-    @classmethod
-    def _calculate_distance(
-            cls, 
-            x1: float, 
-            y1: float,
-            x2: float,
-            y2: float) -> float:
-        """Method to calculate the distance between two points
-
-        Parameters:
-            x1 (float): x for first coord
-            y1 (float): y for first coord
-            x2 (float): x for second coord
-            y2 (float): y for second coord
-
-        Returns:
-            float: The distance between two points
-        """
-        
-        return math.sqrt(math.pow(x1-x2, 2) + math.pow(y1-y2, 2))
     
     @classmethod
     def _calculate_output_strand(
@@ -463,7 +433,6 @@ class GCodeAnalizer(object):
                     .replace(gcode_feed_rate_symbol, "0")
                     .split())
             else:
-                print("here")
                 gcode_position = (line
                     .strip()
                     .replace(gcode_initial_position_symbols[0], "")

@@ -85,9 +85,11 @@ class ImageSegmetation(object):
         # Transform the object to eliminate distorsion
         transformed_object: np.ndarray = cls._transform_masked_3d_object(
             masked_object, top_left_coord_3d_object)
+        
+        pixels_per_metric = cls.get_pixels_per_metric()
                 
         return (transformed_object, 
-                cls.get_pixels_per_metric(), 
+                pixels_per_metric, 
                 middle_coords_3d_object, 
                 top_left_coord_3d_object)
     
@@ -203,8 +205,6 @@ class ImageSegmetation(object):
         box = cv2.boxPoints(box)
         box = np.array(box, dtype="int")
         warped = perspective.four_point_transform(masked_object, box)
-        
-        print(warped.shape)
 
         print_image("warped", warped, 600)
         
@@ -220,17 +220,12 @@ class ImageSegmetation(object):
         
         cnts = [c for c in cnts if cv2.contourArea(c) > 1000]
         
-        print("contours")
-        print(len(cnts))
-        
         box = cv2.minAreaRect(cnts[0])
         box = cv2.boxPoints(box)
         box = np.array(box, dtype="int")
         box = perspective.order_points(box)
     
         (top_left, top_right, bottom_right, bottom_left) = box
-        
-        print(top_left, top_right, bottom_right, bottom_left)
         
         top_left = list(map(int, top_left))
         top_right = list(map(int, top_right))
@@ -242,9 +237,6 @@ class ImageSegmetation(object):
                 max(bottom_right[1], bottom_left[1]), 
             max(top_left[0], bottom_left[0]):
                 max(top_right[0], bottom_right[0])]
-        
-        print("shape")
-        print(warped_external_contour.shape)
         
         print_image("warped_external_contour", warped_external_contour, 600)
             
@@ -299,8 +291,6 @@ class ImageSegmetation(object):
         box = perspective.order_points(box)
     
         (top_left, top_right, bottom_right, bottom_left) = box
-        print("box coords")
-        print(top_left, top_right, bottom_right, bottom_left)
  
         (top_left_bottom_left_X, top_left_bottom_left_Y) = cls._mid_point(
             top_left, bottom_left)

@@ -52,20 +52,26 @@ class AnomalyDetection(object):
          pixels_per_metric, 
          middle_coords_3d_object, 
          top_left_coord_3d_object) = ImageSegmetation.segment_image(image)
+        
+        ppm_degree_offset = []
+        
+        for offset in [i * 0.1 for i in range(-10, 11)]:
+            ppm_degree_offset.append(pixels_per_metric + offset)
                 
         # Analize gcode file and extract data
         coords: List[List[object]] = GCodeAnalizer.extract_data(gcode_file)
 
-        # Create perfect printed model based on gcode information
-        perfect_model = ImageGenerator.generate_image(
+        # Create perfect printed models based on gcode information
+        perfect_models = ImageGenerator.generate_images(
             image.shape[0:2], 
             middle_coords_3d_object, 
             top_left_coord_3d_object, 
             coords, 
-            pixels_per_metric, 
+            ppm_degree_offset, 
             reference_object_width)
         
         # Mask and error detection
-        ErrorDetection.detect_errors(segmented_image, perfect_model)
+        ErrorDetection.detect_errors(
+            segmented_image, perfect_models, ppm_degree_offset)
         
         # Load results

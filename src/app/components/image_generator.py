@@ -2,6 +2,7 @@ import os
 import sys
 import cv2
 import math
+import copy
 import imutils
 import numpy as np
 from typing import List
@@ -10,7 +11,6 @@ from imutils import perspective
 sys.path.append(os.path.dirname(os.getcwd()))
 
 from app.utils.constants.constants import *
-from app.common.common import print_image
 
 class ImageGenerator(object):
     
@@ -18,7 +18,7 @@ class ImageGenerator(object):
     of the 3D printed object
     
     Methods:
-        generate_image (
+        generate_images (
                 image_shape: List[int], 
                 middle_coords_3d_object: tuple[float], 
                 top_left_coord_3d_object: tuple[float], 
@@ -49,13 +49,13 @@ class ImageGenerator(object):
     """
     
     @classmethod
-    def generate_image(
+    def generate_images(
             cls, 
             image_shape: List[int], 
             middle_coords_3d_object: tuple[float], 
             top_left_coord_3d_object: tuple[float], 
             coords: List[List[object]],
-            pixels_per_metric: float, 
+            ppm_degree_offset: List[float], 
             reference_object_width: float) -> np.ndarray:
         """Method to generate the image of the perfect model
 
@@ -70,85 +70,95 @@ class ImageGenerator(object):
                 image
             coords (List[List[object]]): 
                 Real coordinates of the 3d printed object
-            pixels_per_metric (float): 
-                Pixels per metric value given by the width of the reference 
-                object
+            ppm_degree_offset (List[float]): 
+                List of pixels per metric values variations representing degree
+                offsets when taking the picture of the original image
             reference_object_width (float): Width of the reference object
 
         Returns:
             np.ndarray: Image with the perfect model of the 3d printed object
         """
         
-        perfect_model = np.zeros(shape=image_shape, dtype=np.uint8)
+        # List of perfect models
+        perfect_models = []
         
-        for layer in coords:
-            mean_coord = cls._get_mean_coord(layer)
-            layer = cls._normalize_and_transform_coords(
-                layer, 
-                mean_coord, 
-                pixels_per_metric, 
-                reference_object_width, 
-                middle_coords_3d_object)
+        max_strand_width = 0
+        
+        for pixels_per_metric in ppm_degree_offset:
+            perfect_model = np.zeros(shape=image_shape, dtype=np.uint8)
             
-            for perimeter in layer[2]:
-                for i in range(len(perimeter[1]) - 1):
-                    cv2.line(
-                        perfect_model, 
-                        pt1=(perimeter[1][i][0], perimeter[1][i][1]),
-                        pt2=(perimeter[1][i+1][0], perimeter[1][i+1][1]), 
-                        color=(255, 255, 255), 
-                        thickness=perimeter[1][i+1][2]
-                    )
+            for layer in coords:
+                mean_coord = cls._get_mean_coord(layer)
+                transformed_layer = cls._normalize_and_transform_coords(
+                    layer, 
+                    mean_coord, 
+                    pixels_per_metric, 
+                    reference_object_width, 
+                    middle_coords_3d_object)
+                
+                actual_max_strand_width = cls._get_max_strand_width(
+                    transformed_layer)
+                
+                if actual_max_strand_width > max_strand_width:
+                    max_strand_width = actual_max_strand_width
+                
+                for perimeter in transformed_layer[2]:
+                    for i in range(len(perimeter[1]) - 1):
+                        cv2.line(
+                            perfect_model, 
+                            pt1=(perimeter[1][i][0], perimeter[1][i][1]),
+                            pt2=(perimeter[1][i+1][0], perimeter[1][i+1][1]), 
+                            color=(255, 255, 255), 
+                            thickness=perimeter[1][i+1][2]
+                        )
+            
+            perfect_models.append(perfect_model)
         
-        print_image("perfect model", perfect_model, 600)
+        # List of transformed perfect models
+        transformed_perfect_models = []
         
-        cnts = cv2.findContours(
-            perfect_model, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
-        cnts = imutils.grab_contours(cnts)
+        for perfect_model in perfect_models:
+            cnts = cv2.findContours(
+                perfect_model, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+            cnts = imutils.grab_contours(cnts)
+            
+            box = cv2.minAreaRect(cnts[0])
+            box = cv2.boxPoints(box)
+            box = np.array(box, dtype="int")
+            box = perspective.order_points(box)
         
-        box = cv2.minAreaRect(cnts[0])
-        box = cv2.boxPoints(box)
-        box = np.array(box, dtype="int")
-        box = perspective.order_points(box)
-    
-        (tl, tr, br, bl) = box
+            (tl, tr, br, bl) = box
+            
+            tl = list(map(int, tl))
+            tr = list(map(int, tr))
+            br = list(map(int, br))
+            bl = list(map(int, bl))
+            
+            perfect_model_external_contour = perfect_model[
+                max(tl[1], tr[1]):max(br[1], bl[1]), 
+                max(tl[0], bl[0]):max(tr[0], br[0])]
+            
+            transformed_perfect_model = np.zeros(
+                perfect_model.shape, 
+                dtype=np.uint8)
+            
+            x_offset = round(
+                top_left_coord_3d_object[0] 
+                + math.ceil(max_strand_width/2))
+            y_offset = round(
+                top_left_coord_3d_object[1] 
+                + math.ceil(max_strand_width/2))
+            
+            x_end = x_offset + perfect_model_external_contour.shape[1]
+            y_end = y_offset + perfect_model_external_contour.shape[0]
+            
+            transformed_perfect_model[
+                y_offset:y_end, 
+                x_offset:x_end] = perfect_model_external_contour
+            
+            transformed_perfect_models.append(transformed_perfect_model)
         
-        tl = list(map(int, tl))
-        tr = list(map(int, tr))
-        br = list(map(int, br))
-        bl = list(map(int, bl))
-        print(tl, tr, br, bl)
-        
-        perfect_model_external_contour = perfect_model[
-            max(tl[1], tr[1]):max(br[1], bl[1]), 
-            max(tl[0], bl[0]):max(tr[0], br[0])]
-        print(perfect_model_external_contour.shape)
-        
-        print_image("External contour", perfect_model_external_contour, 600)
-        
-        transformed_perfect_model = np.zeros(
-            perfect_model.shape, 
-            dtype=np.uint8)
-        
-        max_strand_width = cls._get_max_strand_width(coords)
-        
-        x_offset = round(
-            top_left_coord_3d_object[0] 
-            + math.ceil(max_strand_width/2))
-        y_offset = round(
-            top_left_coord_3d_object[1] 
-            + math.ceil(max_strand_width/2))
-        
-        x_end = x_offset + perfect_model_external_contour.shape[1]
-        y_end = y_offset + perfect_model_external_contour.shape[0]
-        
-        transformed_perfect_model[
-            y_offset:y_end, 
-            x_offset:x_end] = perfect_model_external_contour
-        
-        print_image("Transformed model", transformed_perfect_model, 600)
-        
-        return transformed_perfect_model
+        return transformed_perfect_models
     
     @classmethod
     def _get_mean_coord(cls, layer: List[object]) -> float:
@@ -232,7 +242,9 @@ class ImageGenerator(object):
                 the perfect model of the 3d printed object
         """
         
-        for perimeter in layer[2]:
+        transformed_layer = copy.deepcopy(layer)
+        
+        for perimeter in transformed_layer[2]:
             for i in range(len(perimeter[1])):
                 perimeter[1][i][0] = perimeter[1][i][0] - mean_coord
                 perimeter[1][i][0] = cls._metric_to_pixels(
@@ -255,10 +267,10 @@ class ImageGenerator(object):
                     pixels_per_metric, 
                     reference_object_width))
         
-        return layer
+        return transformed_layer
     
     @classmethod
-    def _get_max_strand_width(cls, coords: List[List[object]]) -> int:
+    def _get_max_strand_width(cls, layer: List[object]) -> int:
         """Method to obtain the maximum strand width in pixels from the 
         extrusion data points
 
@@ -272,12 +284,11 @@ class ImageGenerator(object):
         
         max_strand_width = 0
         
-        for layer in coords:
-            for perimeter in layer[2]:
-                for i in range(len(perimeter[1])):
-                    if perimeter[1][i][2] > max_strand_width:
-                        max_strand_width = perimeter[1][i][2]
-                    else: 
-                        continue
+        for perimeter in layer[2]:
+            for i in range(len(perimeter[1])):
+                if perimeter[1][i][2] > max_strand_width:
+                    max_strand_width = perimeter[1][i][2]
+                else: 
+                    continue
                     
         return max_strand_width
