@@ -52,7 +52,8 @@ class ImageSegmetation(object):
     _cnts: List[np.ndarray] = None
     
     @classmethod
-    def segment_image(cls, image: np.ndarray) -> np.ndarray:
+    def segment_image(cls, image: np.ndarray) -> tuple[
+            np.ndarray, float, tuple[float], tuple[float]]:
         """Method to obtain the segmentation of the 3d printed object
 
         Parameters:
@@ -184,7 +185,7 @@ class ImageSegmetation(object):
     def _transform_masked_3d_object(
             cls, 
             masked_object: np.ndarray, 
-            top_left_coord_3d_object: tuple[float]):
+            top_left_coord_3d_object: tuple[float]) -> np.ndarray:
         """Method to get the perspective of the 3d printed object
 
         Parameters:
@@ -283,7 +284,7 @@ class ImageSegmetation(object):
             (point_A[1] + point_B[1]) * 0.5)
     
     @classmethod
-    def _get_3d_object_data(cls):
+    def _get_3d_object_data(cls) -> tuple[tuple[float], tuple[float]]:
         """Method to obtain all neccesary data from the contour of the 3d 
         printed object
         
@@ -336,6 +337,7 @@ class ImageSegmetation(object):
             tr, bottom_right)
         
         width = dist.euclidean(
-            (top_left_bottom_left_X, top_left_bottom_left_Y), (top_right_bottom_right_X, top_right_bottom_right_Y))
+            (top_left_bottom_left_X, top_left_bottom_left_Y), 
+            (top_right_bottom_right_X, top_right_bottom_right_Y))
         
         return width

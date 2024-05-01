@@ -19,7 +19,7 @@ class ImageGenerator(object):
     
     Methods:
         generate_image (
-                image: np.ndarray, 
+                image_shape: List[int], 
                 middle_coords_3d_object: tuple[float], 
                 top_left_coord_3d_object: tuple[float], 
                 coords: List[List[object]],
@@ -51,7 +51,7 @@ class ImageGenerator(object):
     @classmethod
     def generate_image(
             cls, 
-            image: np.ndarray, 
+            image_shape: List[int], 
             middle_coords_3d_object: tuple[float], 
             top_left_coord_3d_object: tuple[float], 
             coords: List[List[object]],
@@ -60,8 +60,8 @@ class ImageGenerator(object):
         """Method to generate the image of the perfect model
 
         Parameters:
-            image (np.ndarray): 
-                Original image
+            image_shape (List[int]): 
+                Original image shape
             middle_coords_3d_object (tuple[float]): 
                 Middle coordinates of the 3d printed object in the original 
                 image
@@ -79,11 +79,7 @@ class ImageGenerator(object):
             np.ndarray: Image with the perfect model of the 3d printed object
         """
         
-        perfect_model = np.zeros(
-            shape=image.shape[0:2], 
-            dtype=np.uint8)
-        
-        max_strand_width = 0
+        perfect_model = np.zeros(shape=image_shape, dtype=np.uint8)
         
         for layer in coords:
             mean_coord = cls._get_mean_coord(layer)
@@ -94,8 +90,6 @@ class ImageGenerator(object):
                 reference_object_width, 
                 middle_coords_3d_object)
             
-            print(layer)
-            
             for perimeter in layer[2]:
                 for i in range(len(perimeter[1]) - 1):
                     cv2.line(
@@ -105,7 +99,6 @@ class ImageGenerator(object):
                         color=(255, 255, 255), 
                         thickness=perimeter[1][i+1][2]
                     )
-                    max_strand_width = perimeter[1][i+1][2] if perimeter[1][i+1][2] > max_strand_width else max_strand_width
         
         print_image("perfect model", perfect_model, 600)
         
@@ -136,6 +129,8 @@ class ImageGenerator(object):
         transformed_perfect_model = np.zeros(
             perfect_model.shape, 
             dtype=np.uint8)
+        
+        max_strand_width = cls._get_max_strand_width(coords)
         
         x_offset = round(
             top_left_coord_3d_object[0] 
@@ -261,3 +256,28 @@ class ImageGenerator(object):
                     reference_object_width))
         
         return layer
+    
+    @classmethod
+    def _get_max_strand_width(cls, coords: List[List[object]]) -> int:
+        """Method to obtain the maximum strand width in pixels from the 
+        extrusion data points
+
+        Parameters:
+            coords (List[List[object]]): 
+                Transformed coordinates of the 3d printed object
+                
+        Returns:
+            int: Maximum strand width
+        """
+        
+        max_strand_width = 0
+        
+        for layer in coords:
+            for perimeter in layer[2]:
+                for i in range(len(perimeter[1])):
+                    if perimeter[1][i][2] > max_strand_width:
+                        max_strand_width = perimeter[1][i][2]
+                    else: 
+                        continue
+                    
+        return max_strand_width

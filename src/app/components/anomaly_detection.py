@@ -28,7 +28,7 @@ class AnomalyDetection(object):
             cls, 
             gcode_name: str, 
             image_name: str, 
-            reference_object_width: float):
+            reference_object_width: float) -> None:
         """This is the main algorithm to detect 3d printing anomalies in 
         images.
 
@@ -58,7 +58,7 @@ class AnomalyDetection(object):
 
         # Create perfect printed model based on gcode information
         perfect_model = ImageGenerator.generate_image(
-            image, 
+            image.shape[0:2], 
             middle_coords_3d_object, 
             top_left_coord_3d_object, 
             coords, 

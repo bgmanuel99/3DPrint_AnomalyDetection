@@ -101,8 +101,6 @@ class GCodeAnalizer(object):
         
         cls._calculate_width_from_relative_extrusion()
         
-        print(cls._coords)
-        
         return cls._coords
     
     @classmethod
@@ -309,9 +307,9 @@ class GCodeAnalizer(object):
                 actual layer
 
         Returns:
-            tuple[bool, int, bool]: 
-                First layer, layer and boolean to acknowledge if it is or not 
-                a new layer
+            tuple[bool, int, bool, bool]: 
+                First layer, layer, first layer type and boolean to 
+                acknowledge if it is or not a new layer
         """
         
         if line.strip() == layer_change_comment:
@@ -400,7 +398,7 @@ class GCodeAnalizer(object):
             layer: int, 
             first_layer_type: bool, 
             layer_type: int, 
-            initial_coords: List[float]) -> tuple[bool, bool]:
+            initial_coords: List[float]) -> tuple[bool, int, bool]:
         """Method to check if it's a new perimeter type in the gcode file for 
         the actual layer
 

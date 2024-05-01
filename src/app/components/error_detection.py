@@ -14,9 +14,6 @@ class ErrorDetection(object):
     
     @classmethod
     def detect_errors(cls, segmented_image, perfect_model):
-        print_image("segmented", segmented_image, 600)
-        print_image("perfect model", perfect_model, 600)
-        
         segmented_image_for_sub = cv2.cvtColor(segmented_image, cv2.COLOR_BGR2GRAY)
         sub = cv2.subtract(perfect_model, segmented_image_for_sub)
         
