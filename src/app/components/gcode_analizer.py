@@ -91,6 +91,8 @@ class GCodeAnalizer(object):
         
         cls._extract_structured_data(gcode_file)
         
+        print(cls._coords)
+        
         cls._calculate_extrusion_relative_distances()
         
         cls._calculate_width_from_relative_extrusion()
@@ -282,6 +284,7 @@ class GCodeAnalizer(object):
                 acknowledge if it is or not a new layer
         """
         
+        # Prusa slicer layer change
         if line.strip() == layer_change_comment:
             if not first_layer: 
                 layer += 1
@@ -335,7 +338,6 @@ class GCodeAnalizer(object):
                 .split(":")[1])
             
             cls._coords[layer].append(height_value)
-            cls._coords[layer].append([])
             
             return True
         
@@ -394,6 +396,7 @@ class GCodeAnalizer(object):
                     
                 first_layer_type = False
                 type_name = type.split(":")[1]
+                cls._coords[layer].append([])
                 cls._coords[layer][2].append([type_name, [initial_coords]])
                 
                 return first_layer_type, layer_type, True
