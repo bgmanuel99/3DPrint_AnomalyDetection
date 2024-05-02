@@ -48,15 +48,10 @@ class AnomalyDetection(object):
         LowContrastDetection.low_contrast_dectection(image)
 
         # Image segmentation
-        (segmented_image, 
-         pixels_per_metric, 
+        (masked_3d_object, 
+         ppm_degree_offset, 
          middle_coords_3d_object, 
          top_left_coord_3d_object) = ImageSegmetation.segment_image(image)
-        
-        ppm_degree_offset = []
-        
-        for offset in [i * 0.1 for i in range(-10, 11)]:
-            ppm_degree_offset.append(pixels_per_metric + offset)
                 
         # Analize gcode file and extract data
         coords: List[List[object]] = GCodeAnalizer.extract_data(gcode_file)
@@ -72,6 +67,6 @@ class AnomalyDetection(object):
         
         # Mask and error detection
         ErrorDetection.detect_errors(
-            segmented_image, perfect_models, ppm_degree_offset)
+            masked_3d_object, perfect_models, ppm_degree_offset)
         
         # Load results

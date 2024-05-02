@@ -4,11 +4,10 @@ import cv2
 import numpy
 from skimage.exposure import is_low_contrast
 
-# Add the src directory to sys.path
 sys.path.append(os.path.dirname(os.getcwd()))
 
 from app.utils.exceptions.low_contrast_exceptions import *
-from app.common.common import system_out
+from app.common.common import CommonPrints
 
 # TODO: Search for histogram equalization to enhance image contrast if it is too low
 class LowContrastDetection(object):
@@ -38,4 +37,4 @@ class LowContrastDetection(object):
             if is_low_contrast(image): 
                 raise LowContrastDetectionException()
         except LowContrastDetectionException as e:
-            system_out(e)
+            CommonPrints.system_out(e)

@@ -11,7 +11,10 @@ from scipy.spatial import distance as dist
 # Add the src directory to sys.path
 sys.path.append(os.path.dirname(os.getcwd()))
 
-from app.common.common import print_image
+from app.common.common import (
+    CommonPrints, 
+    CommonFunctionalities, 
+    CommonMorphologyOperations)
 
 class ImageSegmetation(object):
     
@@ -33,20 +36,23 @@ class ImageSegmetation(object):
                 segmented: np.ndarray): 
             Private method to obtain only the 3d printed object segmentation 
             through its contour
+        _get_3d_object_data (
+                printed_object_box_coordinates: tuple[tuple[float]]):
+            Private method to obtain all neccesary data from the contour of 
+            the 3d printed object
         _transform_masked_3d_object( 
                 masked_object: np.ndarray, 
-                top_left_coord_3d_object: tuple[float]):
+                top_left_coord_3d_object: tuple[float], 
+                printed_object_box_coordinates: tuple[tuple[float]]):
             Private method to get the perspective of the 3d printed object
         _mid_point (
                 point_A: tuple[float], 
                 point_B: tuple[float]):
             Private method to calculate the mid points of an edge
-        _get_3d_object_data ():
-            Private method to obtain all neccesary data from the contour of 
-            the 3d printed object
-        get_pixels_per_metric ():
-            Method to obtain the pixels per metric variable based on a 
-            reference object in the original image
+        _get_pixels_per_metric ():
+            Private method to obtain the a list of pixels per metric values 
+            variations representing degree offsets when taking the picture of 
+            the original image
     """
     
     _cnts: List[np.ndarray] = None
@@ -69,7 +75,7 @@ class ImageSegmetation(object):
         # Segment the original image
         segmented: np.ndarray = cls._get_complete_segmented_image(image)
         
-        print_image("segmented", segmented, 600)
+        CommonPrints.print_image("segmented", segmented, 600)
         
         # Obtain the contours of the object in the image
         cls._get_contours(segmented)
@@ -77,19 +83,24 @@ class ImageSegmetation(object):
         # Obtain only the 3d object segmentation
         masked_object: np.ndarray = cls._get_3d_object_masked(image, segmented)
         
+        printed_object_box_coordinates = CommonFunctionalities \
+            .get_box_coordinates(cls._cnts[1])
+        
         # Calculate middle coordinates of the 3d printed object in the original
         # image
         (middle_coords_3d_object, 
-         top_left_coord_3d_object) = cls._get_3d_object_data()
+         top_left_coord_3d_object) = cls._get_3d_object_data(
+            printed_object_box_coordinates)
         
         # Transform the object to eliminate distorsion
-        transformed_object: np.ndarray = cls._transform_masked_3d_object(
-            masked_object, top_left_coord_3d_object)
-        
-        pixels_per_metric = cls.get_pixels_per_metric()
+        transformed_object: np.ndarray = cls \
+            ._transform_and_translate_masked_3d_object(
+                masked_object, 
+                top_left_coord_3d_object, 
+                printed_object_box_coordinates)
                 
         return (transformed_object, 
-                pixels_per_metric, 
+                cls._get_pixels_per_metric(), 
                 middle_coords_3d_object, 
                 top_left_coord_3d_object)
     
@@ -104,20 +115,12 @@ class ImageSegmetation(object):
             np.ndarray: Complete segmentation of the original image
         """
         
-        # Convert the image to grayscale and blur it slightly
-        # Blurring the image helps remove some of the high frequency edges 
-        # in the image and allow a more clean segmentation
-        gray_image = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
-        blurred_image = cv2.GaussianBlur(gray_image, (7, 7), 0)
+        segmented_image = CommonFunctionalities.get_segmented_image(image)
         
-        segmented = cv2.threshold(
-            blurred_image, 0, 255, cv2.THRESH_BINARY | cv2.THRESH_OTSU)[1]
+        CommonPrints.print_image("segmented", segmented_image, 600)
         
-        print_image("segmented", segmented, 600)
-        
-        kernel = np.ones((5, 5), np.uint8)
-        
-        opening = cv2.morphologyEx(segmented, cv2.MORPH_OPEN, kernel)
+        opening = CommonMorphologyOperations.morphologyEx_opening(
+            segmented_image, (5, 5))
         
         return opening
     
@@ -130,9 +133,7 @@ class ImageSegmetation(object):
         """
         
         # Find contours in the segmented image
-        cnts = cv2.findContours(
-            segmented, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
-        cnts = imutils.grab_contours(cnts)
+        cnts = CommonFunctionalities.find_and_grab_contours(segmented)
         
         # Sort the contours from bottom to top in order to get the contour
         # of the reference object as the first variable
@@ -159,35 +160,61 @@ class ImageSegmetation(object):
         """
         
         # Create a mask only for the 3d printed object based on the contour
-        external_contour = np.zeros(image.shape[0:2], dtype=np.uint8)
-        filled_contour = external_contour.copy()
-        
-        cv2.drawContours(
-            external_contour, [cls._cnts[1]], -1, (255, 255, 255), 2)
+        filled_contour = np.zeros(image.shape[0:2], dtype=np.uint8)
         
         cv2.fillPoly(filled_contour, [cls._cnts[1]], (255, 255, 255))
         
-        full_contour = external_contour + filled_contour
-        
         # This first bitwise operation is to mask the 3d printed object
         # getting rid of the reference object of the original image
-        masked = cv2.bitwise_and(image, image, mask=full_contour)
+        masked = cv2.bitwise_and(image, image, mask=filled_contour)
         
-        print_image("masked", masked, 600)
+        CommonPrints.print_image("masked", masked, 600)
         
         # This second bitwise operation is to separate the 3d printed object
         # forground from the background
         masked = cv2.bitwise_and(masked, masked, mask=segmented)
         
-        print_image("masked", masked, 600)
+        CommonPrints.print_image("masked", masked, 600)
         
         return masked
     
     @classmethod
-    def _transform_masked_3d_object(
+    def _get_3d_object_data(
+            cls, 
+            printed_object_box_coordinates: tuple[tuple[float]]
+            ) -> tuple[tuple[float], tuple[float]]:
+        """Method to obtain all neccesary data from the contour of the 3d 
+        printed object
+        
+        Parameters:
+            printed_object_box_coordinates (tuple[tuple[float]]): 
+                The box coordinates of a contour
+        
+        Returns:
+            tuple[float]: Middle coordinates of the 3d printed object
+            tuple[float]: Top left coordinates of the 3d printed object
+        """
+        
+        (top_left, top_right, bottom_right, bottom_left) = perspective \
+            .order_points(printed_object_box_coordinates)
+ 
+        printed_object_left_mid_point = cls._mid_point(
+            top_left, bottom_left)
+        printed_object_right_mid_point = cls._mid_point(
+            top_right, bottom_right)
+        
+        # Compute the middle coordinates of the 3d printed object
+        middle_coords_3d_object = cls._mid_point(
+            printed_object_left_mid_point, printed_object_right_mid_point)
+        
+        return middle_coords_3d_object, top_left
+    
+    @classmethod
+    def _transform_and_translate_masked_3d_object(
             cls, 
             masked_object: np.ndarray, 
-            top_left_coord_3d_object: tuple[float]) -> np.ndarray:
+            top_left_coord_3d_object: tuple[float], 
+            printed_object_box_coordinates: tuple[tuple[float]]) -> np.ndarray:
         """Method to get the perspective of the 3d printed object
 
         Parameters:
@@ -196,65 +223,41 @@ class ImageSegmetation(object):
             top_left_coord_3d_object (tuple[float]): 
                 Top left coordinates of the 3d printed object in the original
                 image
+            printed_object_box_coordinates (tuple[tuple[float]]): 
+                The box coordinates of a contour
 
         Returns:
             np.ndarray: 3d printed object with the perspective transformation
         """
         
-        box = cv2.minAreaRect(cls._cnts[1])
-        box = cv2.boxPoints(box)
-        box = np.array(box, dtype="int")
-        warped = perspective.four_point_transform(masked_object, box)
+        warped = perspective.four_point_transform(
+            masked_object, printed_object_box_coordinates)
 
-        print_image("warped", warped, 600)
+        CommonPrints.print_image("warped", warped, 600)
         
-        gray_image = cv2.cvtColor(warped, cv2.COLOR_BGR2GRAY)
-        blurred_image = cv2.GaussianBlur(gray_image, (7, 7), 0)
+        segmented_image = CommonFunctionalities.get_segmented_image(warped)
         
-        segmented = cv2.threshold(
-            blurred_image, 0, 255, cv2.THRESH_BINARY | cv2.THRESH_OTSU)[1]
-        
-        cnts = cv2.findContours(
-            segmented, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
-        cnts = imutils.grab_contours(cnts)
+        cnts = CommonFunctionalities.find_and_grab_contours(segmented_image)
         
         cnts = [c for c in cnts if cv2.contourArea(c) > 1000]
         
-        box = cv2.minAreaRect(cnts[0])
-        box = cv2.boxPoints(box)
-        box = np.array(box, dtype="int")
-        box = perspective.order_points(box)
-    
-        (top_left, top_right, bottom_right, bottom_left) = box
+        box = CommonFunctionalities.get_box_coordinates(cnts[0])
+        (top_left, top_right, bottom_right, bottom_left) = perspective \
+            .order_points(box)
         
-        top_left = list(map(int, top_left))
-        top_right = list(map(int, top_right))
-        bottom_right = list(map(int, bottom_right))
-        bottom_left = list(map(int, bottom_left))
-
-        warped_external_contour = warped[
-            max(top_left[1], top_right[1]):
-                max(bottom_right[1], bottom_left[1]), 
-            max(top_left[0], bottom_left[0]):
-                max(top_right[0], bottom_right[0])]
+        translated_object = CommonFunctionalities.get_translated_object(
+            warped, 
+            top_left,
+            top_right, 
+            bottom_right, 
+            bottom_left, 
+            top_left_coord_3d_object, 
+            masked_object.shape, 
+            0)
         
-        print_image("warped_external_contour", warped_external_contour, 600)
-            
-        transformed_image = np.zeros(masked_object.shape, dtype=np.uint8)
+        CommonPrints.print_image("transformed_image", translated_object, 600)
         
-        x_offset = round(top_left_coord_3d_object[0])
-        y_offset = round(top_left_coord_3d_object[1])
-        
-        x_end = x_offset + warped_external_contour.shape[1]
-        y_end = y_offset + warped_external_contour.shape[0]
-        
-        transformed_image[
-            y_offset:y_end, 
-            x_offset:x_end] = warped_external_contour
-        
-        print_image("transformed_image", transformed_image, 600)
-        
-        return transformed_image
+        return translated_object
     
     @classmethod
     def _mid_point(
@@ -276,58 +279,33 @@ class ImageSegmetation(object):
             (point_A[1] + point_B[1]) * 0.5)
     
     @classmethod
-    def _get_3d_object_data(cls) -> tuple[tuple[float], tuple[float]]:
-        """Method to obtain all neccesary data from the contour of the 3d 
-        printed object
-        
-        Returns:
-            tuple[float]: Middle coordinates of the 3d printed object
-            tuple[float]: Top left coordinates of the 3d printed object
-        """
-        
-        box = cv2.minAreaRect(cls._cnts[1])
-        box = cv2.boxPoints(box)
-        box = np.array(box, dtype="int")
-        box = perspective.order_points(box)
-    
-        (top_left, top_right, bottom_right, bottom_left) = box
- 
-        (top_left_bottom_left_X, top_left_bottom_left_Y) = cls._mid_point(
-            top_left, bottom_left)
-        (top_right_bottom_right_X, top_right_bottom_right_Y) = cls._mid_point(
-            top_right, bottom_right)
-        
-        # Compute the middle coordinates of the 3d printed object
-        middle_coords_3d_object = cls._mid_point(
-            (top_left_bottom_left_X, top_left_bottom_left_Y), 
-            (top_right_bottom_right_X, top_right_bottom_right_Y))
-        
-        return middle_coords_3d_object, top_left
-    
-    @classmethod
-    def get_pixels_per_metric(cls) -> float:
-        """Method to obtain the pixels per metric variable based on a 
-        reference object in the original image
+    def _get_pixels_per_metric(cls) -> tuple[float]:
+        """Method to obtain the a list of pixels per metric values variations 
+        representing degree offsets when taking the picture of the original 
+        image
 
         Returns:
-            float: 
-                Pixels per metric value given by the width of the reference 
-                object
+            List[float]: 
+                List of pixels per metric values variations 
+                representing degree offsets when taking the picture of the 
+                original image
         """
         
-        box = cv2.minAreaRect(cls._cnts[0])
-        box = cv2.boxPoints(box)
-        box = np.array(box, dtype="int")
-        box = perspective.order_points(box)
-    
-        (top_left, tr, bottom_right, bottom_left) = box
-        (top_left_bottom_left_X, top_left_bottom_left_Y) = cls._mid_point(
+        box = CommonFunctionalities.get_box_coordinates(cls._cnts[0])
+        (top_left, top_right, bottom_right, bottom_left) = perspective \
+            .order_points(box)
+            
+        printed_object_left_mid_point = cls._mid_point(
             top_left, bottom_left)
-        (top_right_bottom_right_X, top_right_bottom_right_Y) = cls._mid_point(
-            tr, bottom_right)
+        printed_object_right_mid_point = cls._mid_point(
+            top_right, bottom_right)
         
         width = dist.euclidean(
-            (top_left_bottom_left_X, top_left_bottom_left_Y), 
-            (top_right_bottom_right_X, top_right_bottom_right_Y))
+            printed_object_left_mid_point, printed_object_right_mid_point)
         
-        return width
+        ppm_degree_offset = []
+        
+        for offset in [i * 0.1 for i in range(-10, 11)]:
+            ppm_degree_offset.append(width + offset)
+        
+        return ppm_degree_offset

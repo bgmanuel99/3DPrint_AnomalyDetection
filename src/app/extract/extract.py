@@ -8,7 +8,7 @@ import numpy as np
 sys.path.append(os.path.dirname(os.getcwd()))
 
 from app.utils.exceptions.extract_exceptions import *
-from app.common.common import system_out
+from app.common.common import CommonPrints
 from app.utils.constants.constants import *
 
 class Extract(object):
@@ -92,7 +92,7 @@ class Extract(object):
                     raise InputImageDirectoryNotFoundException()
         except (
             InputGCodeDirectoryNotFoundException, InputImageDirectoryNotFoundException) as e:
-            system_out(e)
+            CommonPrints.system_out(e)
     
     @classmethod
     def _check_data(
@@ -137,4 +137,4 @@ class Extract(object):
             ExtractGCodeFileException, 
             ImageNotFileException, 
             ExtractImageException) as e:
-            system_out(e)
+            CommonPrints.system_out(e)

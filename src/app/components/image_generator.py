@@ -11,6 +11,7 @@ from imutils import perspective
 sys.path.append(os.path.dirname(os.getcwd()))
 
 from app.utils.constants.constants import *
+from app.common.common import CommonFunctionalities
 
 class ImageGenerator(object):
     
@@ -115,50 +116,29 @@ class ImageGenerator(object):
             perfect_models.append(perfect_model)
         
         # List of transformed perfect models
-        transformed_perfect_models = []
+        translated_perfect_models = []
         
         for perfect_model in perfect_models:
-            cnts = cv2.findContours(
-                perfect_model, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
-            cnts = imutils.grab_contours(cnts)
+            cnts = CommonFunctionalities.find_and_grab_contours(perfect_model)
             
-            box = cv2.minAreaRect(cnts[0])
-            box = cv2.boxPoints(box)
-            box = np.array(box, dtype="int")
-            box = perspective.order_points(box)
+            box = CommonFunctionalities.get_box_coordinates(cnts[0])
+            (top_left, top_right, bottom_right, bottom_left) = perspective \
+                .order_points(box)
+                
+            translated_perfect_model = CommonFunctionalities \
+                .get_translated_object(
+                    perfect_model, 
+                    top_left, 
+                    top_right, 
+                    bottom_right, 
+                    bottom_left, 
+                    top_left_coord_3d_object, 
+                    perfect_model.shape, 
+                    math.ceil(max_strand_width/2))
+            
+            translated_perfect_models.append(translated_perfect_model)
         
-            (tl, tr, br, bl) = box
-            
-            tl = list(map(int, tl))
-            tr = list(map(int, tr))
-            br = list(map(int, br))
-            bl = list(map(int, bl))
-            
-            perfect_model_external_contour = perfect_model[
-                max(tl[1], tr[1]):max(br[1], bl[1]), 
-                max(tl[0], bl[0]):max(tr[0], br[0])]
-            
-            transformed_perfect_model = np.zeros(
-                perfect_model.shape, 
-                dtype=np.uint8)
-            
-            x_offset = round(
-                top_left_coord_3d_object[0] 
-                + math.ceil(max_strand_width/2))
-            y_offset = round(
-                top_left_coord_3d_object[1] 
-                + math.ceil(max_strand_width/2))
-            
-            x_end = x_offset + perfect_model_external_contour.shape[1]
-            y_end = y_offset + perfect_model_external_contour.shape[0]
-            
-            transformed_perfect_model[
-                y_offset:y_end, 
-                x_offset:x_end] = perfect_model_external_contour
-            
-            transformed_perfect_models.append(transformed_perfect_model)
-        
-        return transformed_perfect_models
+        return translated_perfect_models
     
     @classmethod
     def _get_mean_coord(cls, layer: List[object]) -> float:

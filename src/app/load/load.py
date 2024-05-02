@@ -7,7 +7,7 @@ import numpy
 sys.path.append(os.path.dirname(os.getcwd()))
 
 from app.utils.exceptions.load_exceptions import *
-from app.common.common import system_out
+from app.common.common import CommonPrints
 from app.utils.constants.constants import *
 
 class Load(object):
@@ -54,4 +54,4 @@ class Load(object):
                 + output_image_directory_path): 
                     raise OutputImageDirectoryNotFound()
         except OutputImageDirectoryNotFound as e:
-            system_out(e)
+            CommonPrints.system_out(e)
