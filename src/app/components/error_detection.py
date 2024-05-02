@@ -16,7 +16,7 @@ class ErrorDetection(object):
             cls, 
             masked_3d_object, 
             perfect_models, 
-            ppm_degree_offset):
+            ppm_degree_offset) -> tuple[np.ndarray, int]:
         
         ssim_max_score = 0
         ssim_max_score_index = 0
@@ -63,8 +63,4 @@ class ErrorDetection(object):
             600, 
             True)
         
-    @classmethod
-    def detect_error(cls, imageA, imageB):
-        # compute the Structural Similarity Index (SSIM) between the two
-        # images, ensuring that the difference image is returned
-        return 
+        return original_image_with_errors, ssim_max_score_index
