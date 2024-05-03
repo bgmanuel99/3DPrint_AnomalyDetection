@@ -2,6 +2,7 @@ import os
 import sys
 import cv2
 import numpy as np
+from typing import List
 from skimage.metrics import structural_similarity
 
 # Add the src directory to sys.path
@@ -10,13 +11,49 @@ sys.path.append(os.path.dirname(os.getcwd()))
 from app.common.common import CommonPrints, CommonFunctionalities
 
 class ErrorDetection(object):
+    """Class containing the method to detect defects in the real 3d printed 
+    object
+
+    Methods:
+        detect_errors (
+                cls, 
+                masked_3d_object: np.ndarray, 
+                perfect_models: List[np.ndarray], 
+                ppm_degree_offset: List[float]):
+            Method to detect exact errors between different perfect models of 
+            the 3d impresion and a transformed and segmented image of the real 
+            3d printed object
+    """
     
     @classmethod
     def detect_errors(
             cls, 
-            masked_3d_object, 
-            perfect_models, 
-            ppm_degree_offset) -> tuple[np.ndarray, int]:
+            masked_3d_object: np.ndarray, 
+            perfect_models: List[np.ndarray], 
+            ppm_degree_offset: List[float]) -> tuple[np.ndarray, int]:
+        """Method to detect exact errors between different perfect models of 
+        the 3d impresion and a transformed and segmented image of the real 3d 
+        printed object
+
+        Parameters:
+            masked_3d_object (np.ndarray):
+                Transformed and segmented image of the real 3d printed object
+            perfect_models (List[np.ndarray]):
+                Perfect models with sligth size differences of the 3d printed 
+                object
+            ppm_degree_offset (List[float]):
+                A list of the pixels per metric values containing the real 
+                extracted value and others with a slight increase and decrease 
+                value representing the degree error when the image of the real
+                3d printed object is taken
+
+        Returns:
+            tuple[np.ndarray, int]:
+                A tuple with the image of the real 3d printed object with the 
+                detected errors and the max SSIM score index which will 
+                indicate the index in the list of perfect models to know which 
+                of them was finally used for the detection of the error
+        """
         
         ssim_max_score = 0
         ssim_max_score_index = 0
