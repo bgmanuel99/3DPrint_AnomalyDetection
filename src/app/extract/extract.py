@@ -12,7 +12,6 @@ from app.common.common import CommonPrints
 from app.utils.constants.constants import *
 
 class Extract(object):
-    
     """Class for the process data extraction.
     
     Methods:

@@ -17,7 +17,6 @@ from app.common.common import (
     CommonMorphologyOperations)
 
 class ImageSegmetation(object):
-    
     """This class contains methods to segmentated the original image with the
     3D printed and reference objects and to get a pixels per metric value 
     based on the reference object

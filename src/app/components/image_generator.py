@@ -14,7 +14,6 @@ from app.utils.constants.constants import *
 from app.common.common import CommonFunctionalities
 
 class ImageGenerator(object):
-    
     """This class contains methods to create the image of the perfect model 
     of the 3D printed object
     

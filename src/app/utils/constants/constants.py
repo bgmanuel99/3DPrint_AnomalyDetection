@@ -30,5 +30,6 @@ layer_height: float = 0.25
 # ******************* Image generator *******************
 
 # ******************* Load data *******************
-output_image_directory_path: str = "/data/output/"
-output_image_file_extension: str = "png"
+output_directory_path: str = "/data/output/"
+output_image_file_extension: str = "jpg"
+output_report_extension: str = "pdf"

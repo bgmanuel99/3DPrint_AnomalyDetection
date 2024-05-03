@@ -14,7 +14,6 @@ from app.components.low_contrast_detection import LowContrastDetection
 from app.load.load import Load
 
 class AnomalyDetection(object):
-
     """Class containing the main algorithm to detect anomalies in 3d printed 
     objects.
 
@@ -22,7 +21,7 @@ class AnomalyDetection(object):
         anomaly_detection (
                 gcode_name: str, 
                 image_name: str, 
-                metadata_path: str, 
+                metadata_name: str, 
                 reference_object_width: float):
             Main algorithm to detect 3d printing anomalies in images.
     """
@@ -32,14 +31,14 @@ class AnomalyDetection(object):
             cls, 
             gcode_name: str, 
             image_name: str, 
-            metadata_path: str, 
+            metadata_name: str, 
             reference_object_width: float) -> None:
         """Main algorithm to detect 3d printing anomalies in images.
 
         Parameters:
             gcode_name (str): Name of the input gcode file
             image_name (str): Name of the input image
-            metadata_path (str): Metadata path for report
+            metadata_name (str): Metadata name for report
             reference_object_width (float): 
                 Known real world width of the reference object
         """
@@ -75,11 +74,11 @@ class AnomalyDetection(object):
             .detect_errors(masked_3d_object, perfect_models, ppm_degree_offset)
         
         # Load results
-        Load.create_pdf_report(
-            image_name, 
-            gcode_name, 
-            image, 
-            perfect_models[ssim_max_score_index], 
-            masked_3d_object, 
-            original_image_with_errors, 
-            metadata_path)
+        # Load.create_pdf_report(
+        #     image_name, 
+        #     gcode_name, 
+        #     image, 
+        #     perfect_models[ssim_max_score_index], 
+        #     masked_3d_object, 
+        #     original_image_with_errors, 
+        #     metadata_name)

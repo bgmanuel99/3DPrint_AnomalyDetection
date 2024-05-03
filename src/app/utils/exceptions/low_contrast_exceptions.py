@@ -7,10 +7,11 @@ class LowContrastDetectionException(Exception):
     
     def __init__(
             self, 
-            message="The image has not enough contrast, please introduce a high contrast image to the pipeline"):
+            message=("The image has not enough contrast, please introduce a "
+                     "high contrast image to the pipeline")) -> None:
         self.message = message
         
         super().__init__(self.message)
         
-    def __str__(self):
+    def __str__(self) -> str:
         return "LowContrastDetectionException: {}".format(self.message)

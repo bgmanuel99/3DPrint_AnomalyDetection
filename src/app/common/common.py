@@ -4,7 +4,6 @@ import numpy as np
 from typing import List
 
 class CommonPrints(object):
-    
     """Class containing common functions of printing
 
     Methods:
@@ -93,7 +92,6 @@ class CommonPrints(object):
             cv2.destroyAllWindows()
 
 class CommonFunctionalities(object):
-    
     """Class containing common functionalities of the modules
 
     Methods:
@@ -234,7 +232,6 @@ class CommonFunctionalities(object):
         return translated_image
     
 class CommonMorphologyOperations(object):
-    
     """Class contining common functions for morphology operations over images
     
     Methods:

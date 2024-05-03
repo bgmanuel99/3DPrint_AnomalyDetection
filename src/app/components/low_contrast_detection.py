@@ -11,7 +11,6 @@ from app.common.common import CommonPrints
 
 # TODO: Search for histogram equalization to enhance image contrast if it is too low
 class LowContrastDetection(object):
-    
     """This class contains the algorithms to detect low contrast images.
     
     Methods:

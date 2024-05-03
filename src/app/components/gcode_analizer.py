@@ -10,7 +10,6 @@ sys.path.append(os.path.dirname(os.getcwd()))
 from app.utils.constants.constants import *
 
 class GCodeAnalizer(object):
-    
     """This class contains methods to analize a gcode file and extract all the 
     needed information to create the perfect model of the 3d printed object
     

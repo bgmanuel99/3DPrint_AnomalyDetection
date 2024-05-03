@@ -38,7 +38,7 @@ class ErrorDetection(object):
         subtract = cv2.subtract(
             perfect_models[ssim_max_score_index], segmented_3d_object)
         
-        CommonPrints.print_image("subtract", subtract, 600, True)
+        CommonPrints.print_image("subtract", subtract, 600)
         
         cnts = CommonFunctionalities.find_and_grab_contours(subtract)
         
@@ -52,7 +52,7 @@ class ErrorDetection(object):
                 cv2.rectangle(
                     filled_contours, (x, y), (x + w, y + h), (0, 0, 255), 1)
         
-        CommonPrints.print_image("Error contours", filled_contours, 600, True)
+        CommonPrints.print_image("Error contours", filled_contours, 600)
         
         original_image_with_errors = cv2.add(
             masked_3d_object, filled_contours)
@@ -60,7 +60,6 @@ class ErrorDetection(object):
         CommonPrints.print_image(
             "Original image with errors", 
             original_image_with_errors, 
-            600, 
-            True)
+            600)
         
         return original_image_with_errors, ssim_max_score_index
