@@ -32,8 +32,8 @@ if __name__ == "__main__":
                 case "reference_object_width":
                     reference_object_width = float(input_name)
     except ValueError as e:
-        print(("InputPrefixException: You forgot to introduce a prefix or a"
-               "value review your input command."))
+        print(("InputPrefixException: You forgot to introduce a prefix or a "
+               "value or introduced to many, review your input command."))
         exit()
     
     try:

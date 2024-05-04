@@ -10,28 +10,28 @@ sys.path.append(os.path.dirname(os.getcwd()))
 
 from app.common.common import CommonPrints, CommonFunctionalities
 
-class ErrorDetection(object):
+class DefectDetection(object):
     """Class containing the method to detect defects in the real 3d printed 
     object
 
     Methods:
-        detect_errors (
+        detect_defects (
                 cls, 
                 masked_3d_object: np.ndarray, 
                 perfect_models: List[np.ndarray], 
                 ppm_degree_offset: List[float]):
-            Method to detect exact errors between different perfect models of 
+            Method to detect exact defects between different perfect models of 
             the 3d impresion and a transformed and segmented image of the real 
             3d printed object
     """
     
     @classmethod
-    def detect_errors(
+    def detect_defects(
             cls, 
             masked_3d_object: np.ndarray, 
             perfect_models: List[np.ndarray], 
-            ppm_degree_offset: List[float]) -> tuple[np.ndarray, int]:
-        """Method to detect exact errors between different perfect models of 
+            ppm_degree_offset: List[float]) -> tuple[np.ndarray, int, float]:
+        """Method to detect exact defects between different perfect models of 
         the 3d impresion and a transformed and segmented image of the real 3d 
         printed object
 
@@ -48,11 +48,13 @@ class ErrorDetection(object):
                 3d printed object is taken
 
         Returns:
-            tuple[np.ndarray, int]:
-                A tuple with the image of the real 3d printed object with the 
-                detected errors and the max SSIM score index which will 
-                indicate the index in the list of perfect models to know which 
-                of them was finally used for the detection of the error
+            tuple[np.ndarray, int, float]:
+                - A tuple with the image of the real 3d printed object with 
+                the detected defectss
+                - The max SSIM score index which will indicate the index in 
+                the list of perfect models to know which of them was finally 
+                used for the detection of the defects
+                - The max SSIM score
         """
         
         ssim_max_score = 0
@@ -89,14 +91,17 @@ class ErrorDetection(object):
                 cv2.rectangle(
                     filled_contours, (x, y), (x + w, y + h), (0, 0, 255), 1)
         
-        CommonPrints.print_image("Error contours", filled_contours, 600)
+        CommonPrints.print_image("Defect contours", filled_contours, 600)
         
-        original_image_with_errors = cv2.add(
+        original_image_with_defects = cv2.add(
             masked_3d_object, filled_contours)
         
         CommonPrints.print_image(
-            "Original image with errors", 
-            original_image_with_errors, 
+            "Original image with defects", 
+            original_image_with_defects, 
             600)
         
-        return original_image_with_errors, ssim_max_score_index
+        return (
+            original_image_with_defects, 
+            ssim_max_score_index, 
+            ssim_max_score)

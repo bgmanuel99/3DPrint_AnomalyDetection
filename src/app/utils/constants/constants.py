@@ -1,9 +1,14 @@
+from typing import List
+
 # ******************* Extract data *******************
-input_gcode_directory_path: str = "/data/input/gcode/"
+inputs_father_directory_path: str = "/data/input/"
+input_image_directory: str = "image/"
+input_gcode_directory: str = "gcode/"
+input_metadata_directory: str = "metadata/"
 gcode_file_extension: str = "gcode"
-input_image_directory_path: str = "/data/input/image/"
-image_file_extension: str = "png"
-input_metadata_directory_path: str = "/data/input/metadata"
+image_file_extensions: List[str] = [
+    "png", "jpg", "jpeg", "jpe", "bmp", "dib", "jp2", "pbm", "pgm", "ppm", 
+    "sr", "ras", "tiff", "tif"]
 metadata_file_extension: str = "txt"
 
 # ******************* Low contrast detection *******************

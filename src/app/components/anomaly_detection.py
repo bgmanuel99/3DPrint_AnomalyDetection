@@ -8,7 +8,7 @@ sys.path.append(os.path.dirname(os.getcwd()))
 from app.extract.extract import Extract
 from app.components.gcode_analizer import GCodeAnalizer
 from app.components.image_generator import ImageGenerator
-from app.components.error_detection import ErrorDetection
+from app.components.defect_detection import DefectDetection
 from app.components.image_segmentation import ImageSegmetation
 from app.components.low_contrast_detection import LowContrastDetection
 from app.load.load import Load
@@ -44,7 +44,7 @@ class AnomalyDetection(object):
         """
 
         # Extract data
-        gcode_file, image = Extract.extract_process_data(
+        gcode_file, image, metadata_file = Extract.extract_process_data(
             gcode_name, 
             image_name, 
             metadata_name)
@@ -70,9 +70,11 @@ class AnomalyDetection(object):
             ppm_degree_offset, 
             reference_object_width)
         
-        # Mask and error detection
-        original_image_with_errors, ssim_max_score_index = ErrorDetection \
-            .detect_errors(masked_3d_object, perfect_models, ppm_degree_offset)
+        # Mask and defect detection
+        (original_image_with_defects, 
+         ssim_max_score_index, 
+         ssim_max_score) = DefectDetection.detect_defects(
+            masked_3d_object, perfect_models, ppm_degree_offset)
         
         # Load results
         # Load.create_pdf_report(
@@ -81,5 +83,6 @@ class AnomalyDetection(object):
         #     image, 
         #     perfect_models[ssim_max_score_index], 
         #     masked_3d_object, 
-        #     original_image_with_errors, 
-        #     metadata_name)
+        #     original_image_with_defects, 
+        #     ssim_max_score, 
+        #     metadata_file)

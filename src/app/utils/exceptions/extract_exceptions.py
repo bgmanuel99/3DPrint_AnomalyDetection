@@ -13,7 +13,7 @@ class InputImageDirectoryNotFoundException(Exception):
     def __str__(self) -> str:
         return (
             "InputImageDirectoryNotFoundException: {}. "
-            "Check data folder, there should be a ../input/image/ directory."
+            "An image directory will be created at ../app/data/input/"
         ).format(self.message)
 
 class ExtractImageException(Exception):
@@ -35,7 +35,7 @@ class ExtractImageException(Exception):
         super().__init__(self.message)
         
     def __str__(self) -> str:
-        return "ExtractImageException: image name -> {}. {}.".format(
+        return "ExtractImageException: image name -> '{}'. {}.".format(
             self.image_name, 
             self.message)
         
@@ -58,10 +58,43 @@ class ImageNotFileException(Exception):
         super().__init__(self.message)
         
     def __str__(self) -> str:
-        return "ImageNotFileException: image name -> {}. {}.".format(
+        return "ImageNotFileException: image name -> '{}'. {}.".format(
             self.image_name, 
             self.message)
+        
+class NonSupportedImageExtensionException(Exception):
+    """Raised when the input image has a non supported file extension.
 
+    Parameters:
+        image_name (str): The name of the image given by the user
+        image_extension (str): The extension of the image given by the user
+        available_extension (List[str]): The list of available extensions
+        message (str): Explanation message of the error
+    """
+    
+    def __init__(
+            self, 
+            image_name, 
+            image_extension, 
+            available_extension, 
+            message = "") -> None:
+        self.image_name = image_name
+        self.image_extension = image_extension
+        self.available_extensions = available_extension
+        self.message = message
+        
+        super().__init__(self.message)
+        
+    def __str__(self) -> str:
+        return (
+            "NonSupportedImageExtensionException: The image '{}' has a " 
+            "'{}' extension, which is not supported. This are the image " 
+            "supported extensions: {}"
+        ).format(
+            self.image_name, 
+            self.image_extension, 
+            self.available_extensions)
+        
 class InputGCodeDirectoryNotFoundException(Exception):
     """Raised when the gcode input directory is not found.
 
@@ -77,7 +110,7 @@ class InputGCodeDirectoryNotFoundException(Exception):
     def __str__(self) -> str:
         return (
             "InputGCodeDirectoryNotFoundException: {}. "
-            "Check data folder, there should be a ../input/gcode/ directory."
+            "A gcode directory will be created at ../app/data/input"
         ).format(self.message)
     
 class ExtractGCodeFileException(Exception):
@@ -99,9 +132,11 @@ class ExtractGCodeFileException(Exception):
         super().__init__(self.message)
         
     def __str__(self) -> str:
-        return "ExtractGCodeFileException: gcode file name -> {}. {}.".format(
-            self.gcode_name, 
-            self.message)
+        return (
+            "ExtractGCodeFileException: gcode file name -> '{}'. {}."
+        ).format(
+                self.gcode_name, 
+                self.message)
     
 class GCodeNotFileException(Exception):
     """Raised when the input gcode is not a file.
@@ -122,9 +157,39 @@ class GCodeNotFileException(Exception):
         super().__init__(self.message)
         
     def __str__(self) -> str:
-        return "GCodeNotFileException: gcode file name -> {}. {}.".format(
+        return "GCodeNotFileException: gcode file name -> '{}'. {}.".format(
             self.gcode_name, 
             self.message)
+        
+class NonSupportedGcodeExtensionException(Exception):
+    """Raised when the input gcode file has a non supported file extension.
+
+    Parameters:
+        gcode_name (str): The name of the gcode file given by the user
+        gcode_extension (str): 
+            The extension of the gcode file given by the user
+        message (str): Explanation message of the error
+    """
+    
+    def __init__(
+            self, 
+            gcode_name, 
+            gcode_extension, 
+            message="") -> None:
+        self.gcode_name = gcode_name
+        self.gcode_extension = gcode_extension
+        self.message = message
+        
+        super().__init__(self.message)
+        
+    def __str__(self) -> str:
+        return (
+            "NonSupportedGcodeExtensionException: The gcode file '{}' has a " 
+            "'{}' extension, which is not supported. This is the gcode " 
+            "supported extension: .gcode"
+        ).format(
+            self.gcode_name, 
+            self.gcode_extension)
         
 class InputMetadataDirectoryNotFoundException(Exception):
     """Raised when the metadata input directory is not found.
@@ -141,8 +206,7 @@ class InputMetadataDirectoryNotFoundException(Exception):
     def __str__(self) -> str:
         return (
             "InputMetadataDirectoryNotFoundException: {}. "
-            "Check data folder, there should be a ../input/metadata/ "
-            "directory."
+            "A metadata directory will be created at ../app/data/input/"
         ).format(self.message)
         
 class ExtractMetadataException(Exception):
@@ -165,7 +229,7 @@ class ExtractMetadataException(Exception):
         
     def __str__(self) -> str:
         return (
-            "ExtractMetadataException: metadata file name -> {}. {}."
+            "ExtractMetadataException: metadata file name -> '{}'. {}."
         ).format(self.metadata_name, self.message)
         
 class MetadataNotFileException(Exception):
@@ -188,5 +252,35 @@ class MetadataNotFileException(Exception):
         
     def __str__(self) -> str:
         return (
-            "MetadataNotFileException: metadata file name -> {}. {}."
+            "MetadataNotFileException: metadata file name -> '{}'. {}."
         ).format(self.metadata_name, self.message)
+        
+class NonSupportedMetadataExtensionException(Exception):
+    """Raised when the input metadata file has a non supported file extension.
+
+    Parameters:
+        metadata_name (str): The name of the metadata file given by the user
+        metadata_extension (str): 
+            The extension of the metadata file given by the user
+        message (str): Explanation message of the error
+    """
+    
+    def __init__(
+            self, 
+            metadata_name, 
+            metadata_extension, 
+            message="") -> None:
+        self.metadata_name = metadata_name
+        self.metadata_extension = metadata_extension
+        self.message = message
+        
+        super().__init__(self.message)
+        
+    def __str__(self) -> str:
+        return (
+            "NonSupportedMetadataExtensionException: The metadata file '{}' " 
+            "has a '{}' extension, which is not supported. This is the " 
+            "metadata supported extension: .txt"
+        ).format(
+            self.metadata_name, 
+            self.metadata_extension)

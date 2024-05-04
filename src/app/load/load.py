@@ -23,7 +23,7 @@ class Load(object):
             original_image: np.ndarray, 
             perfect_model: np.ndarray, 
             masked_3d_object: np.ndarray, 
-            original_image_with_errors: np.ndarray, 
+            original_image_with_defects: np.ndarray, 
             metadata_name: np.ndarray) -> None:
         
         # Check if output directory exists
@@ -35,12 +35,12 @@ class Load(object):
                 "original_image", 
                 "perfect_model", 
                 "masked_3d_object", 
-                "original_image_with_errors"), 
+                "original_image_with_defects"), 
             (
                 original_image, 
                 perfect_model, 
                 masked_3d_object, 
-                original_image_with_errors)
+                original_image_with_defects)
         ))
         
         # Create pdf report
