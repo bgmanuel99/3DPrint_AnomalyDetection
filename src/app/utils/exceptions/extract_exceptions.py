@@ -5,9 +5,7 @@ class InputImageDirectoryNotFoundException(Exception):
         message (str): Explanation message of the error
     """
     
-    def __init__(
-            self, 
-            message="Can't find input directory for images") -> None:
+    def __init__(self, message="Can't find images input directory") -> None:
         self.message = message
         
         super().__init__(self.message)
@@ -16,26 +14,6 @@ class InputImageDirectoryNotFoundException(Exception):
         return (
             "InputImageDirectoryNotFoundException: {}. "
             "Check data folder, there should be a ../input/image/ directory."
-        ).format(self.message)
-    
-class InputGCodeDirectoryNotFoundException(Exception):
-    """Raised when the gcode input directory is not found.
-
-    Parameters:
-        message (str): Explanation message of the error
-    """
-    
-    def __init__(
-            self, 
-            message="Can't find input directory for gcode files") -> None:
-        self.message = message
-        
-        super().__init__(self.message)
-    
-    def __str__(self) -> str:
-        return (
-            "InputGCodeDirectoryNotFoundException: {}. "
-            "Check data folder, there should be a ../input/gcode/ directory."
         ).format(self.message)
 
 class ExtractImageException(Exception):
@@ -60,7 +38,7 @@ class ExtractImageException(Exception):
         return "ExtractImageException: image name -> {}. {}.".format(
             self.image_name, 
             self.message)
-    
+        
 class ImageNotFileException(Exception):
     """Raised when the input image is not a file.
 
@@ -83,6 +61,24 @@ class ImageNotFileException(Exception):
         return "ImageNotFileException: image name -> {}. {}.".format(
             self.image_name, 
             self.message)
+
+class InputGCodeDirectoryNotFoundException(Exception):
+    """Raised when the gcode input directory is not found.
+
+    Parameters:
+        message (str): Explanation message of the error
+    """
+    
+    def __init__(self, message="Can't find gcode input directory") -> None:
+        self.message = message
+        
+        super().__init__(self.message)
+    
+    def __str__(self) -> str:
+        return (
+            "InputGCodeDirectoryNotFoundException: {}. "
+            "Check data folder, there should be a ../input/gcode/ directory."
+        ).format(self.message)
     
 class ExtractGCodeFileException(Exception):
     """Raised when the input gcode file cannot be found.
@@ -103,7 +99,7 @@ class ExtractGCodeFileException(Exception):
         super().__init__(self.message)
         
     def __str__(self) -> str:
-        return "ExtractGCodeFileException: file name -> {}. {}.".format(
+        return "ExtractGCodeFileException: gcode file name -> {}. {}.".format(
             self.gcode_name, 
             self.message)
     
@@ -126,6 +122,71 @@ class GCodeNotFileException(Exception):
         super().__init__(self.message)
         
     def __str__(self) -> str:
-        return "GCodeNotFileException: file name -> {}. {}.".format(
+        return "GCodeNotFileException: gcode file name -> {}. {}.".format(
             self.gcode_name, 
             self.message)
+        
+class InputMetadataDirectoryNotFoundException(Exception):
+    """Raised when the metadata input directory is not found.
+
+    Parameters:
+        message (str): Explanation message of the error
+    """
+    
+    def __init__(self, message="Can't find metadata input directory") -> None:
+        self.message = message
+        
+        super().__init__(self.message)
+        
+    def __str__(self) -> str:
+        return (
+            "InputMetadataDirectoryNotFoundException: {}. "
+            "Check data folder, there should be a ../input/metadata/ "
+            "directory."
+        ).format(self.message)
+        
+class ExtractMetadataException(Exception):
+    """Raised when the input metadata file cannot be found.
+
+    Parameters:
+        gcode_name (str): The name of the metadata file given by the user
+        message (str): Explanation message of the error
+    """
+    
+    def __init__(
+            self, 
+            metadata_name, 
+            message=("The metadata file could not be found or is in an "
+                     "incorrect folder")) -> None:
+        self.metadata_name = metadata_name
+        self.message = message
+        
+        super().__init__(message)
+        
+    def __str__(self) -> str:
+        return (
+            "ExtractMetadataException: metadata file name -> {}. {}."
+        ).format(self.metadata_name, self.message)
+        
+class MetadataNotFileException(Exception):
+    """Raised when the input metadata is not a file.
+
+    Parameters:
+        gcode_name (str): The name of the metadata file given by the user
+        message (str): Explanation message of the error
+    """
+    
+    def __init__(
+            self, 
+            metadata_name, 
+            message=("The input metadata file is not a valid file. "
+                     "Check the extension")) -> None:
+        self.metadata_name = metadata_name
+        self.message = message
+        
+        super().__init__(self.message)
+        
+    def __str__(self) -> str:
+        return (
+            "MetadataNotFileException: metadata file name -> {}. {}."
+        ).format(self.metadata_name, self.message)

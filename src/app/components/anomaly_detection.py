@@ -46,7 +46,8 @@ class AnomalyDetection(object):
         # Extract data
         gcode_file, image = Extract.extract_process_data(
             gcode_name, 
-            image_name)
+            image_name, 
+            metadata_name)
 
         # Detect low contrast images
         LowContrastDetection.low_contrast_dectection(image)

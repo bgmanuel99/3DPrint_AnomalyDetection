@@ -15,7 +15,10 @@ class Extract(object):
     """Class for the process data extraction.
     
     Methods:
-        extract_process_data (gcode_name: str, image_name: str): 
+        extract_process_data (
+                gcode_name: str, 
+                image_name: str, 
+                metadata_name: str): 
             Method to extract process data.
         _check_directories: 
             Private method to check if the directories of the input files
@@ -24,7 +27,9 @@ class Extract(object):
                 gcode_path: str,
                 gcode_name: str, 
                 image_path: str,
-                image_name: str): 
+                image_name: str, 
+                metadata_path: str, 
+                metadata_name: str): 
             Private method to check if the input files exists.
     """
     
@@ -32,16 +37,20 @@ class Extract(object):
     def extract_process_data(
             cls, 
             gcode_name: str, 
-            image_name: str) -> tuple[io.TextIOWrapper, np.ndarray]:
+            image_name: str, 
+            # TODO: Terminar de añadir devolucion del metadato al metodo
+            metadata_name: str) -> tuple[io.TextIOWrapper, np.ndarray]:
         """Method to extract process data.
 
         Parameters:
             gcode_name (str): Name of the gcode file
             image_name (str): Name of the image
+            metadata_name (str): Name of the metadata file
 
         Returns:
-            io.TextIOWrapper: Gcode file
-            numpy.ndarray: Image file
+            # TODO: Terminar de añadir devolucion del metadato al metodo
+            tuple[io.TextIOWrapper, numpy.ndarray]
+                Gcode file, image and metadata file
         """
         
         gcode_path = "{}{}{}.{}".format(
@@ -56,18 +65,33 @@ class Extract(object):
             image_name, 
             image_file_extension)
         
+        metadata_path = "{}{}{}.{}".format(
+            os.path.dirname(os.getcwd()), 
+            input_metadata_directory_path, 
+            metadata_name, 
+            metadata_file_extension
+        )
+        
         # Check if directories exists
         cls._check_directories()
         
-        # Check if data exists
-        cls._check_data(gcode_path, gcode_name, image_path, image_name)
+        # Check if data exists and are files
+        cls._check_data(
+            gcode_path, 
+            gcode_name, 
+            image_path, 
+            image_name, 
+            metadata_path, 
+            metadata_name)
         
         # Extract data
         gcode_file = open(gcode_path, "r")
         
         image = cv2.imread(image_path)
         
-        return gcode_file, image
+        metadata_file = open(metadata_path, "r")
+        
+        return gcode_file, image, metadata_file
     
     @classmethod
     def _check_directories(cls):
