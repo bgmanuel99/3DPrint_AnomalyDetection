@@ -1,6 +1,7 @@
 import os
 import sys
 import cv2
+import math
 import numpy as np
 from typing import List
 from imutils import contours
@@ -22,7 +23,8 @@ class ImageSegmetation(object):
 
     Methods:
         segment_image (image: np.ndarray): 
-            Method to obtain the segmentation of the 3d printed object
+            Method to obtain the 3d printed object mask and different data to
+            calculate the perfect model and areas
         _get_complete_segmented_image (image: np.ndarray): 
             Private method to obtain the complete segmentation of the original 
             image
@@ -57,17 +59,21 @@ class ImageSegmetation(object):
     
     @classmethod
     def segment_image(cls, image: np.ndarray) -> tuple[
-            np.ndarray, float, tuple[float], tuple[float]]:
-        """Method to obtain the segmentation of the 3d printed object
+            np.ndarray, List[float], tuple[float], tuple[float], float]:
+        """Method to obtain the 3d printed object mask and different data to
+        calculate the perfect model and areas
 
         Parameters:
             image (np.ndarray): Original image
 
         Returns:
             np.ndarray: Segmented image
-            float: Variable with pixels per metric value
+            List[float]: 
+                List of pixels per metric values variations representing degree
+                offsets when taking the picture of the original image
             tuple[float]: Middle coordinates of the 3d printed object
             tuple[float]: Top left coordinates of the 3d printed object
+            float: Reference object area in pixels
         """
         
         # Segment the original image
@@ -96,11 +102,15 @@ class ImageSegmetation(object):
                 masked_object, 
                 top_left_coord_3d_object, 
                 printed_object_box_coordinates)
+        
+        ppm_degree_offset = cls._get_pixels_per_metric()
+        reference_object_pixels_area = cv2.contourArea(cls._cnts[0])
                 
         return (transformed_object, 
-                cls._get_pixels_per_metric(), 
+                ppm_degree_offset, 
                 middle_coords_3d_object, 
-                top_left_coord_3d_object)
+                top_left_coord_3d_object, 
+                reference_object_pixels_area)
     
     @classmethod
     def _get_complete_segmented_image(cls, image: np.ndarray) -> np.ndarray:
@@ -119,6 +129,8 @@ class ImageSegmetation(object):
         
         opening = CommonMorphologyOperations.morphologyEx_opening(
             segmented_image, (5, 5))
+        
+        CommonPrints.print_image("opening", opening, 600)
         
         return opening
     
@@ -289,6 +301,7 @@ class ImageSegmetation(object):
                 original image
         """
         
+        # Calculate euclidian distance of the reference object
         box = CommonFunctionalities.get_box_coordinates(cls._cnts[0])
         (top_left, top_right, bottom_right, bottom_left) = perspective \
             .order_points(box)

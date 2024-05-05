@@ -41,7 +41,7 @@ class AnomalyDetection(object):
             image_name (str): Name of the input image
             metadata_name (str): Metadata name for report
             reference_object_width (float): 
-                Known real world width of the reference object
+                Known real width of the reference object
         """
 
         # Extract data
@@ -57,9 +57,13 @@ class AnomalyDetection(object):
         (masked_3d_object, 
          ppm_degree_offset, 
          middle_coords_3d_object, 
-         top_left_coord_3d_object) = ImageSegmetation.segment_image(image)
+         top_left_coord_3d_object, 
+         reference_object_pixels_area) = ImageSegmetation.segment_image(image)
         
-        AreaCalculation.calculate_areas(masked_3d_object)
+        AreaCalculation.calculate_areas(
+            masked_3d_object, 
+            reference_object_width, 
+            reference_object_pixels_area)
         
         exit()
            
