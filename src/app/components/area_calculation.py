@@ -124,15 +124,14 @@ class AreaCalculation(object):
     @classmethod
     def _draw_and_enumerate_contours(
             cls, 
-            masked_3d_object_shape, 
+            masked_3d_object_shape: tuple[int], 
             cnts: tuple[np.ndarray]) -> np.ndarray:
         """Method to draw and enumerate the internal contours of the 3d 
         printed object
 
         Parameters:
-            masked_3d_object_shape (_type_): 
-                Shape of the masked 3d printed object image that has to accord 
-                with the shape of the original process image
+            masked_3d_object_shape (tuple[int]): 
+                Shape of array dimensions
             cnts (tuple[np.ndarray]): 
                 The tuple of the internal contours of the 3d printed object 
                 to be drawn

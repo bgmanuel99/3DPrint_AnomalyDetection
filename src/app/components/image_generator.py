@@ -51,8 +51,9 @@ class ImageGenerator(object):
             top_left_coord_3d_object: tuple[float], 
             coords: List[List[object]],
             ppm_degree_offset: List[float], 
-            reference_object_width: float) -> np.ndarray:
-        """Method to generate the image of the perfect model
+            reference_object_width: float) -> List[np.ndarray]:
+        """Method to generate images of the perfect model with slight changes 
+        in size
 
         Parameters:
             image_shape (List[int]): 
@@ -71,7 +72,8 @@ class ImageGenerator(object):
             reference_object_width (float): Width of the reference object
 
         Returns:
-            np.ndarray: Image with the perfect model of the 3d printed object
+            List[np.ndarray]: 
+                List with the perfect models of the 3d printed object
         """
         
         # List of perfect models
