@@ -1,4 +1,5 @@
 import os
+import io
 import sys
 import cv2
 import numpy as np
@@ -23,8 +24,11 @@ class Load(object):
             original_image: np.ndarray, 
             perfect_model: np.ndarray, 
             masked_3d_object: np.ndarray, 
-            original_image_with_defects: np.ndarray, 
-            metadata_name: np.ndarray) -> None:
+            masked_3d_object_with_defects: np.ndarray, 
+            ssim_max_score: float, 
+            impresion_defects_total_diff: float, 
+            segmentation_defects_total_diff: float, 
+            metadata_file: io.TextIOWrapper | str) -> None:
         
         # Check if output directory exists
         cls._check_directory()
@@ -35,12 +39,12 @@ class Load(object):
                 "original_image", 
                 "perfect_model", 
                 "masked_3d_object", 
-                "original_image_with_defects"), 
+                "masked_3d_object_with_defects"), 
             (
                 original_image, 
                 perfect_model, 
                 masked_3d_object, 
-                original_image_with_defects)
+                masked_3d_object_with_defects)
         ))
         
         # Create pdf report

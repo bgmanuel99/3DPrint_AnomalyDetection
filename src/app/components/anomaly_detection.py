@@ -8,6 +8,7 @@ sys.path.append(os.path.dirname(os.getcwd()))
 from app.extract.extract import Extract
 from app.components.gcode_analizer import GCodeAnalizer
 from app.components.image_generator import ImageGenerator
+from app.components.area_calculation import AreaCalculation
 from app.components.defect_detection import DefectDetection
 from app.components.image_segmentation import ImageSegmetation
 from app.components.low_contrast_detection import LowContrastDetection
@@ -57,7 +58,11 @@ class AnomalyDetection(object):
          ppm_degree_offset, 
          middle_coords_3d_object, 
          top_left_coord_3d_object) = ImageSegmetation.segment_image(image)
-                
+        
+        AreaCalculation.calculate_areas(masked_3d_object)
+        
+        exit()
+           
         # Analize gcode file and extract data
         coords: List[List[object]] = GCodeAnalizer.extract_data(gcode_file)
 
@@ -71,9 +76,11 @@ class AnomalyDetection(object):
             reference_object_width)
         
         # Mask and defect detection
-        (original_image_with_defects, 
+        (masked_3d_object_with_defects, 
          ssim_max_score_index, 
-         ssim_max_score) = DefectDetection.detect_defects(
+         ssim_max_score, 
+         impresion_defects_total_diff, 
+         segmentation_defects_total_diff) = DefectDetection.detect_defects(
             masked_3d_object, perfect_models, ppm_degree_offset)
         
         # Load results
@@ -83,6 +90,8 @@ class AnomalyDetection(object):
         #     image, 
         #     perfect_models[ssim_max_score_index], 
         #     masked_3d_object, 
-        #     original_image_with_defects, 
+        #     masked_3d_object_with_defects, 
         #     ssim_max_score, 
+        #     impresion_defects_total_diff, 
+        #     segmentation_defects_total_diff, 
         #     metadata_file)

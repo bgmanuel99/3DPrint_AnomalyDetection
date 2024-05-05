@@ -30,7 +30,8 @@ class DefectDetection(object):
             cls, 
             masked_3d_object: np.ndarray, 
             perfect_models: List[np.ndarray], 
-            ppm_degree_offset: List[float]) -> tuple[np.ndarray, int, float]:
+            ppm_degree_offset: List[float]) -> tuple[
+                np.ndarray, int, float, float, float]:
         """Method to detect exact defects between different perfect models of 
         the 3d impresion and a transformed and segmented image of the real 3d 
         printed object
@@ -48,20 +49,28 @@ class DefectDetection(object):
                 3d printed object is taken
 
         Returns:
-            tuple[np.ndarray, int, float]:
+            tuple[np.ndarray, int, float, float, float]:
                 - A tuple with the image of the real 3d printed object with 
                 the detected defectss
                 - The max SSIM score index which will indicate the index in 
                 the list of perfect models to know which of them was finally 
                 used for the detection of the defects
                 - The max SSIM score
+                - The impresion defects error based on SSIM score
+                - The segmentation defects error based on SSIM score
         """
         
         ssim_max_score = 0
         ssim_max_score_index = 0
         
+        CommonPrints.print_image(
+            "masked_3d_object", masked_3d_object, 600, True)
+        
         segmented_3d_object = CommonFunctionalities.get_segmented_image(
             masked_3d_object)
+        
+        CommonPrints.print_image(
+            "segmented_3d_object", segmented_3d_object, 600, True)
         
         for i in range(len(perfect_models)):
             ssim_score = structural_similarity(
@@ -77,31 +86,94 @@ class DefectDetection(object):
         subtract = cv2.subtract(
             perfect_models[ssim_max_score_index], segmented_3d_object)
         
-        CommonPrints.print_image("subtract", subtract, 600)
+        CommonPrints.print_image("subtract", subtract, 600, True)
         
         cnts = CommonFunctionalities.find_and_grab_contours(subtract)
         
-        filled_contours = np.zeros(masked_3d_object.shape, dtype=np.uint8)
+        impresion_defects_contours = np.zeros(
+            masked_3d_object.shape, dtype=np.uint8)
+        
+        segmentation_defects_contours = np.zeros(
+            masked_3d_object.shape, dtype=np.uint8)
         
         for c in cnts:
             if cv2.contourArea(c) > 200:
-                cv2.fillPoly(filled_contours, [c], (251, 4, 131))
-                
+                cv2.fillPoly(impresion_defects_contours, [c], (255, 255, 255))
+            else:
+                cv2.fillPoly(
+                    segmentation_defects_contours, [c], (255, 255, 255))
+              
+        # Calculate defects error based on ssim max score  
+        impresion_defects_white_pixels = np.sum(
+            impresion_defects_contours == 255)
+        
+        segmentation_defects_white_pixels = np.sum(
+            segmentation_defects_contours == 255)
+        
+        total_ssim_diff = 1 - ssim_max_score
+        
+        total_white_pixels = (impresion_defects_white_pixels 
+                              + segmentation_defects_white_pixels)
+        
+        impresion_defects_total_diff = (impresion_defects_white_pixels 
+                                         * total_ssim_diff 
+                                         / total_white_pixels)
+        
+        segmentation_defects_total_diff = (segmentation_defects_white_pixels 
+                                            * total_ssim_diff 
+                                            / total_white_pixels)
+        
+        # Change color of defects
+        impresion_defects_contours[
+            np.all(impresion_defects_contours == (255, 255, 255), axis=-1)
+        ] = (251, 4, 131)
+        
+        segmentation_defects_contours[
+            np.all(segmentation_defects_contours == (255, 255, 255), axis=-1)
+        ] = (255, 0, 0)
+
+        # Add defects bounding rectangles
+        for c in cnts:
+            if cv2.contourArea(c) > 200:
                 (x, y, w, h) = cv2.boundingRect(c)
                 cv2.rectangle(
-                    filled_contours, (x, y), (x + w, y + h), (0, 0, 255), 1)
-        
-        CommonPrints.print_image("Defect contours", filled_contours, 600)
-        
-        original_image_with_defects = cv2.add(
-            masked_3d_object, filled_contours)
+                    impresion_defects_contours, 
+                    (x, y), 
+                    (x + w, y + h), 
+                    (0, 0, 255), 
+                    1)
+            else:
+                (x, y, w, h) = cv2.boundingRect(c)
+                cv2.rectangle(
+                    segmentation_defects_contours, 
+                    (x, y), 
+                    (x + w, y + h), 
+                    (0, 0, 255), 
+                    1)
         
         CommonPrints.print_image(
-            "Original image with defects", 
-            original_image_with_defects, 
+            "Impresion defects contours", 
+            impresion_defects_contours, 
+            600, 
+            True)
+        CommonPrints.print_image(
+           "Segmentation defects contours", 
+           segmentation_defects_contours, 
+           600, 
+           True)
+        
+        # Add original 3d object with the 3d impresion defects
+        masked_3d_object_with_defects = cv2.add(
+            masked_3d_object, impresion_defects_contours)
+        
+        CommonPrints.print_image(
+            "masked_3d_object_with_defects", 
+            masked_3d_object_with_defects, 
             600)
         
         return (
-            original_image_with_defects, 
+            masked_3d_object_with_defects, 
             ssim_max_score_index, 
-            ssim_max_score)
+            ssim_max_score, 
+            impresion_defects_total_diff, 
+            segmentation_defects_total_diff)
