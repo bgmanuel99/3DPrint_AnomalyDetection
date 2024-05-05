@@ -9,7 +9,7 @@ from app.extract.extract import Extract
 from app.components.gcode_analizer import GCodeAnalizer
 from app.components.image_generator import ImageGenerator
 from app.components.area_calculation import AreaCalculation
-from app.components.defect_detection import DefectDetection
+from app.components.defects_detection import DefectsDetection
 from app.components.image_segmentation import ImageSegmetation
 from app.components.low_contrast_detection import LowContrastDetection
 from app.load.load import Load
@@ -82,7 +82,7 @@ class AnomalyDetection(object):
          ssim_max_score_index, 
          ssim_max_score, 
          impresion_defects_total_diff, 
-         segmentation_defects_total_diff) = DefectDetection.detect_defects(
+         segmentation_defects_total_diff) = DefectsDetection.detect_defects(
             masked_3d_object, perfect_models, ppm_degree_offset)
         
         # Load results

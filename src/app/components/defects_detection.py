@@ -5,13 +5,12 @@ from skimage.metrics import structural_similarity
 
 from app.common.common import CommonPrints, CommonFunctionalities
 
-class DefectDetection(object):
+class DefectsDetection(object):
     """Class containing the method to detect defects in the real 3d printed 
     object
 
     Methods:
         detect_defects (
-                cls, 
                 masked_3d_object: np.ndarray, 
                 perfect_models: List[np.ndarray], 
                 ppm_degree_offset: List[float]):
