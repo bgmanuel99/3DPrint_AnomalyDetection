@@ -1,13 +1,9 @@
-import os
-import sys
 import cv2
 import math
 import copy
 import numpy as np
 from typing import List
 from imutils import perspective
-
-sys.path.append(os.path.dirname(os.getcwd()))
 
 from app.utils.constants.constants import *
 from app.common.common import CommonFunctionalities

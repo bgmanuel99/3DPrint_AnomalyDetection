@@ -1,15 +1,11 @@
 import os
 import sys
 import cv2
-import math
 import numpy as np
 from typing import List
 from imutils import contours
 from imutils import perspective
 from scipy.spatial import distance as dist
-
-# Add the src directory to sys.path
-sys.path.append(os.path.dirname(os.getcwd()))
 
 from app.common.common import (
     CommonPrints, 

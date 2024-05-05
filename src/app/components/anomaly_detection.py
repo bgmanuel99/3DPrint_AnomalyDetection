@@ -60,12 +60,10 @@ class AnomalyDetection(object):
          top_left_coord_3d_object, 
          reference_object_pixels_area) = ImageSegmetation.segment_image(image)
         
-        AreaCalculation.calculate_areas(
+        infill_contours_image, infill_areas = AreaCalculation.calculate_areas(
             masked_3d_object, 
             reference_object_width, 
             reference_object_pixels_area)
-        
-        exit()
            
         # Analize gcode file and extract data
         coords: List[List[object]] = GCodeAnalizer.extract_data(gcode_file)

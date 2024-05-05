@@ -1,10 +1,6 @@
-import os
-import sys
 import cv2
 import numpy
 from skimage.exposure import is_low_contrast
-
-sys.path.append(os.path.dirname(os.getcwd()))
 
 from app.utils.exceptions.low_contrast_exceptions import *
 from app.common.common import CommonPrints

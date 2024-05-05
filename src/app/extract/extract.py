@@ -1,11 +1,7 @@
 import os
 import io
-import sys
 import cv2
 import numpy as np
-
-# Add the src directory to sys.path
-sys.path.append(os.path.dirname(os.getcwd()))
 
 from app.utils.exceptions.extract_exceptions import *
 from app.common.common import CommonPrints

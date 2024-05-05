@@ -1,11 +1,7 @@
-import os
 import io
-import sys
 import math
 from typing import List
 from scipy.spatial import distance as dist
-
-sys.path.append(os.path.dirname(os.getcwd()))
 
 from app.utils.constants.constants import *
 

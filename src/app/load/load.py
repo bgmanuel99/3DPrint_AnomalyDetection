@@ -1,15 +1,11 @@
 import os
 import io
-import sys
 import cv2
 import numpy as np
 from typing import List
 from reportlab.lib.units import cm
 from reportlab.lib.pagesizes import A4
 from reportlab.pdfgen.canvas import Canvas
-
-# Add the src directory to sys.path
-sys.path.append(os.path.dirname(os.getcwd()))
 
 from app.utils.exceptions.load_exceptions import *
 from app.common.common import CommonPrints

@@ -1,12 +1,7 @@
-import os
-import sys
 import cv2
 import numpy as np
 from typing import List
 from skimage.metrics import structural_similarity
-
-# Add the src directory to sys.path
-sys.path.append(os.path.dirname(os.getcwd()))
 
 from app.common.common import CommonPrints, CommonFunctionalities
 
