@@ -60,6 +60,7 @@ class AnomalyDetection(object):
          top_left_coord_3d_object, 
          reference_object_pixels_area) = ImageSegmetation.segment_image(image)
         
+        # Internal contours area calculation
         infill_contours_image, infill_areas = AreaCalculation.calculate_areas(
             masked_3d_object, 
             reference_object_width, 
@@ -68,7 +69,8 @@ class AnomalyDetection(object):
         # Analize gcode file and extract data
         coords: List[List[object]] = GCodeAnalizer.extract_data(gcode_file)
 
-        # Create perfect printed models based on gcode information
+        # Create perfect printed models based on gcode information and pixels 
+        # per metric values
         perfect_models = ImageGenerator.generate_images(
             image.shape[0:2], 
             middle_coords_3d_object, 
@@ -83,17 +85,27 @@ class AnomalyDetection(object):
          ssim_max_score, 
          impresion_defects_total_diff, 
          segmentation_defects_total_diff) = DefectsDetection.detect_defects(
-            masked_3d_object, perfect_models, ppm_degree_offset)
+            masked_3d_object, perfect_models)
         
         # Load results
-        # Load.create_pdf_report(
-        #     image_name, 
-        #     gcode_name, 
-        #     image, 
-        #     perfect_models[ssim_max_score_index], 
-        #     masked_3d_object, 
-        #     masked_3d_object_with_defects, 
-        #     ssim_max_score, 
-        #     impresion_defects_total_diff, 
-        #     segmentation_defects_total_diff, 
-        #     metadata_file)
+        Load.create_pdf_report(
+            # Input process data
+            image_name, 
+            gcode_name, 
+            metadata_name, 
+            reference_object_width, 
+            # Images
+            image, 
+            perfect_models[ssim_max_score_index], 
+            masked_3d_object, 
+            masked_3d_object_with_defects, 
+            # Images and data for areas
+            infill_contours_image, 
+            infill_areas, 
+            # Scores and errors
+            ssim_max_score, 
+            ppm_degree_offset[ssim_max_score_index], 
+            impresion_defects_total_diff, 
+            segmentation_defects_total_diff, 
+            # Extra data
+            metadata_file)

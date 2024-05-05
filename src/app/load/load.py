@@ -6,6 +6,7 @@ from typing import List
 from reportlab.lib.units import cm
 from reportlab.lib.pagesizes import A4
 from reportlab.pdfgen.canvas import Canvas
+from reportlab.pdfbase.pdfmetrics import stringWidth
 
 from app.utils.exceptions.load_exceptions import *
 from app.common.common import CommonPrints
@@ -17,11 +18,16 @@ class Load(object):
             cls, 
             image_name: str, 
             gcode_name: str, 
+            metadata_name: str, 
+            reference_object_width: str, 
             original_image: np.ndarray, 
             perfect_model: np.ndarray, 
             masked_3d_object: np.ndarray, 
             masked_3d_object_with_defects: np.ndarray, 
+            infill_contours_image: np.ndarray, 
+            infill_areas: List[List[object]], 
             ssim_max_score: float, 
+            pixels_per_metric: float, 
             impresion_defects_total_diff: float, 
             segmentation_defects_total_diff: float, 
             metadata_file: io.TextIOWrapper | str) -> None:
@@ -44,32 +50,36 @@ class Load(object):
         ))
         
         # Create pdf report
-        canvas = Canvas(
+        report = Canvas(
             "{}{}{}_{}.{}".format(
                 os.path.dirname(os.getcwd()), 
                 output_directory_path, 
-                image_name, 
-                gcode_name, 
+                image_name.split(".")[0], 
+                gcode_name.split(".")[0], 
                 output_report_extension), 
             pagesize=A4, 
             bottomup=0)
         
-        width_A4, height_A4 = A4
-        width_A4, height_A4 = width_A4/cm, height_A4/cm
+        PAGE_WIDTH, PAGE_HEIGHT = A4
         
-        textobject = canvas.beginText(width_A4*0.5*cm, height_A4*0.1*cm)
-        textobject.setFont("Times-Roman", 12)
+        report.setTitle("3D_printing_defect_detection_report")
+        
+        report_title = "3D PRINTING DEFECT DETECTION REPORT"
+        report_title_width = stringWidth(report_title, "Times-Bold", 18)
+        textobject = report.beginText(
+            (PAGE_WIDTH-report_title_width)/2, PAGE_HEIGHT*0.1)
+        textobject.setFont("Times-Bold", 18)
         textobject.textLine("3D PRINTING DEFECT DETECTION REPORT")
         
-        canvas.drawText(textobject)
+        report.drawText(textobject)
         
-        for image_path, offset in zip(image_paths, list(range(1, 5))):
-            canvas.drawInlineImage(image_path, offset*cm, 1*cm, 1*cm, 1*cm)
+        # for image_path, offset in zip(image_paths, list(range(1, 5))):
+        #     report.drawInlineImage(image_path, offset*cm, 1*cm, 1*cm, 1*cm)
           
         # for finishing a page and start drawing in a new one  
-        # canvas.showPage()
+        # report.showPage()
             
-        canvas.save()
+        report.save()
         
         # Delete the resultant images from the output folder after inserting
         # them in the report pdf

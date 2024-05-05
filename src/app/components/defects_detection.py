@@ -12,8 +12,7 @@ class DefectsDetection(object):
     Methods:
         detect_defects (
                 masked_3d_object: np.ndarray, 
-                perfect_models: List[np.ndarray], 
-                ppm_degree_offset: List[float]):
+                perfect_models: List[np.ndarray]):
             Method to detect exact defects between different perfect models of 
             the 3d impresion and a transformed and segmented image of the real 
             3d printed object
@@ -45,8 +44,7 @@ class DefectsDetection(object):
     def detect_defects(
             cls, 
             masked_3d_object: np.ndarray, 
-            perfect_models: List[np.ndarray], 
-            ppm_degree_offset: List[float]) -> tuple[
+            perfect_models: List[np.ndarray]) -> tuple[
                 np.ndarray, int, float, float, float]:
         """Method to detect exact defects between different perfect models of 
         the 3d impresion and a transformed and segmented image of the real 3d 
@@ -58,11 +56,6 @@ class DefectsDetection(object):
             perfect_models (List[np.ndarray]):
                 Perfect models with sligth size differences of the 3d printed 
                 object
-            ppm_degree_offset (List[float]):
-                A list of the pixels per metric values containing the real 
-                extracted value and others with a slight increase and decrease 
-                value representing the degree error when the image of the real
-                3d printed object is taken
 
         Returns:
             tuple[np.ndarray, int, float, float, float]:
@@ -77,13 +70,13 @@ class DefectsDetection(object):
         """
         
         CommonPrints.print_image(
-            "masked_3d_object", masked_3d_object, 600, True)
+            "masked_3d_object", masked_3d_object, 600)
         
         segmented_3d_object = CommonFunctionalities.get_segmented_image(
             masked_3d_object)
         
         CommonPrints.print_image(
-            "segmented_3d_object", segmented_3d_object, 600, True)
+            "segmented_3d_object", segmented_3d_object, 600)
         
         # Calculate ssim max score between the segmented 3d printed object and 
         # the perfect models
@@ -91,14 +84,13 @@ class DefectsDetection(object):
             segmented_3d_object, perfect_models)
         
         print("MAX SSIM SCORE:", ssim_max_score)
-        print("PPM DEGREE OFFSET:", ppm_degree_offset[ssim_max_score_index])
         
         # Subtract the segmented 3d printed object to the perfect model
         # to extract impresion and segmentation defects
         subtract = cv2.subtract(
             perfect_models[ssim_max_score_index], segmented_3d_object)
         
-        CommonPrints.print_image("subtract", subtract, 600, True)
+        CommonPrints.print_image("subtract", subtract, 600)
         
         # Find and grab defects contours
         cnts = CommonFunctionalities.find_and_grab_contours(subtract)
@@ -123,13 +115,11 @@ class DefectsDetection(object):
         CommonPrints.print_image(
             "Impresion defects", 
             impresion_defects, 
-            600, 
-            True)
+            600)
         CommonPrints.print_image(
            "Segmentation defects", 
            segmentation_defects, 
-           600, 
-           True)
+           600)
         
         # Add original 3d object with the 3d impresion defects
         masked_3d_object_with_defects = cv2.add(
@@ -138,7 +128,7 @@ class DefectsDetection(object):
         CommonPrints.print_image(
             "masked_3d_object_with_defects", 
             masked_3d_object_with_defects, 
-            600, True)
+            600)
         
         return (
             masked_3d_object_with_defects, 

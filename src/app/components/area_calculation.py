@@ -74,18 +74,18 @@ class AreaCalculation(object):
         opening = CommonMorphologyOperations.morphologyEx_opening(
             segmented_3d_object, (5, 5))
         
-        CommonPrints.print_image("opening", opening, 600, True)
+        CommonPrints.print_image("opening", opening, 600)
 
         cnts = cls._find_and_sort_contours(opening)
 
         infill_contours_image = cls._draw_and_enumerate_contours(
             masked_3d_object.shape, cnts)
         
+        CommonPrints.print_image(
+            "infill contours image", infill_contours_image, 600)
+        
         infill_pixels_areas = cls._retrieve_contours_pixels_areas(cnts)
 
-        CommonPrints.print_image(
-            "infill contours image", infill_contours_image, 600, True)
-        
         infill_areas = cls._convert_areas_from_pixels_to_millimeters_squared(
             reference_object_width, 
             reference_object_pixels_area, 
