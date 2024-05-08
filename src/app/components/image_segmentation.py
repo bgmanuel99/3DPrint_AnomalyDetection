@@ -1,11 +1,10 @@
-import os
-import sys
 import cv2
 import numpy as np
 from typing import List
 from imutils import contours
 from imutils import perspective
 from scipy.spatial import distance as dist
+from skimage.metrics import structural_similarity
 
 from app.common.common import (
     CommonPrints, 
@@ -86,8 +85,8 @@ class ImageSegmetation(object):
         printed_object_box_coordinates = CommonFunctionalities \
             .get_box_coordinates(cls._cnts[1])
         
-        # Calculate middle coordinates of the 3d printed object in the original
-        # image
+        # Calculate middle and top coordinates of the 3d printed object in the 
+        # original image
         (middle_coords_3d_object, 
          top_left_coord_3d_object) = cls._get_3d_object_data(
             printed_object_box_coordinates)
@@ -106,7 +105,7 @@ class ImageSegmetation(object):
                 ppm_degree_offset, 
                 middle_coords_3d_object, 
                 top_left_coord_3d_object, 
-                reference_object_pixels_area)
+                cls._reference_object_perspective(image, segmented))
     
     @classmethod
     def _get_complete_segmented_image(cls, image: np.ndarray) -> np.ndarray:
@@ -183,6 +182,117 @@ class ImageSegmetation(object):
         CommonPrints.print_image("masked", masked, 600)
         
         return masked
+    
+    @classmethod
+    def _reference_object_perspective(cls, image: np.ndarray, segmented:np.ndarray):
+        # Get reference object mask
+        filled_contour = np.zeros(image.shape[0:2], dtype=np.uint8)
+        
+        cv2.fillPoly(filled_contour, [cls._cnts[0]], (255, 255, 255))
+        
+        masked = cv2.bitwise_and(image, image, mask=filled_contour)
+        
+        CommonPrints.print_image("masked", masked, 600, True)
+        
+        masked = cv2.bitwise_and(masked, masked, mask=segmented)
+        
+        CommonPrints.print_image("masked", masked, 600, True)
+        
+        # Calculate reference object box coordinates
+        reference_object_box_coordinates = CommonFunctionalities.get_box_coordinates(cls._cnts[0])
+        
+        # Compute the middle coordinates of the reference object
+        (top_left, top_right, bottom_right, bottom_left) = perspective.order_points(reference_object_box_coordinates)
+ 
+        print(top_left, top_right, bottom_right, bottom_left)
+        left_mid_point = cls._mid_point(
+            top_left, bottom_left)
+        right_mid_point = cls._mid_point(
+            top_right, bottom_right)
+        
+        middle_coords_3d_object = cls._mid_point(
+            left_mid_point, right_mid_point)
+        
+        middle_coords_3d_object = tuple(map(int, middle_coords_3d_object))
+        
+        warped = perspective.four_point_transform(
+            masked, reference_object_box_coordinates)
+
+        CommonPrints.print_image("warped", warped, 600, True)
+        
+        translated_object = CommonFunctionalities.get_translated_object(
+            warped, 
+            (0, 0),
+            (warped.shape[1], 0), 
+            (warped.shape[1], warped.shape[0]), 
+            (0, warped.shape[0]), 
+            top_left, 
+            masked.shape, 
+            0)
+        
+        CommonPrints.print_image("translated_object", translated_object, 600, True)
+        
+        segmented_image = CommonFunctionalities.get_segmented_image(translated_object)
+        
+        CommonPrints.print_image("segmented_image", segmented_image, 600, True)
+        
+        cnts = CommonFunctionalities.find_and_grab_contours(segmented_image)
+        
+        cnts = [c for c in cnts if cv2.contourArea(c) > 1000]
+        
+        box = CommonFunctionalities.get_box_coordinates(cnts[0])
+        (top_left, top_right, bottom_right, bottom_left) = perspective \
+            .order_points(box)
+        print(top_left, top_right, bottom_right, bottom_left)
+        
+        reference_left_mid_point = cls._mid_point(
+            top_left, bottom_left)
+        reference_right_mid_point = cls._mid_point(
+            top_right, bottom_right)
+        
+        width = round(dist.euclidean(
+            reference_left_mid_point, reference_right_mid_point))
+        
+        print("TRANSLATED PERSPECTIVE WIDTH", width)
+        
+        referece_object_perfect_models_width = []
+        
+        for offset in [i for i in range(-5, 1)]:
+            referece_object_perfect_models_width.append(round(width/2) + offset)
+            
+        reference_object_perfect_models = []
+        
+        for width in referece_object_perfect_models_width:
+            reference_object_perfect_model = np.zeros(shape=masked.shape[0:2], dtype=np.uint8)
+            
+            reference_object_perfect_models.append(
+                cv2.circle(reference_object_perfect_model, middle_coords_3d_object, width, (255, 255, 255), -1)
+            )
+            
+        # for object in reference_object_perfect_models:
+        #     CommonPrints.print_image("perfect model", object, 600, True)
+            
+        ssim_max_score = 0
+        ssim_max_score_index = 0
+        
+        for i in range(len(reference_object_perfect_models)):
+            ssim_score = structural_similarity(
+                reference_object_perfect_models[i], segmented_image, full=True)[0]
+            
+            if ssim_score > ssim_max_score:
+                ssim_max_score = ssim_score
+                ssim_max_score_index = i
+                
+        print("SSIM MAX SCORE", ssim_max_score)
+        print("PERFECT MODEL RADIUS WIDTH", referece_object_perfect_models_width[ssim_max_score_index])
+        
+        CommonPrints.print_image("REFERENCE OBJECT PERFECT MODEL", reference_object_perfect_models[ssim_max_score_index], 600, True)
+        
+        cnts = CommonFunctionalities.find_and_grab_contours(reference_object_perfect_models[ssim_max_score_index])
+        
+        print("PERSPECTIVE PERFECT MODEL PIXELS AREA", cv2.contourArea(cnts[0]))
+        
+        return cv2.contourArea(cnts[0])
     
     @classmethod
     def _get_3d_object_data(
@@ -309,6 +419,8 @@ class ImageSegmetation(object):
         
         width = dist.euclidean(
             printed_object_left_mid_point, printed_object_right_mid_point)
+        
+        print("WIDTH", width)
         
         ppm_degree_offset = []
         

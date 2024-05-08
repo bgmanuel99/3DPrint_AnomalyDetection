@@ -59,12 +59,6 @@ class AnomalyDetection(object):
          middle_coords_3d_object, 
          top_left_coord_3d_object, 
          reference_object_pixels_area) = ImageSegmetation.segment_image(image)
-        
-        # Internal contours area calculation
-        infill_contours_image, infill_areas = AreaCalculation.calculate_areas(
-            masked_3d_object, 
-            reference_object_width, 
-            reference_object_pixels_area)
            
         # Analize gcode file and extract data
         coords: List[List[object]] = GCodeAnalizer.extract_data(gcode_file)
@@ -86,6 +80,15 @@ class AnomalyDetection(object):
          impresion_defects_total_diff, 
          segmentation_defects_total_diff) = DefectsDetection.detect_defects(
             masked_3d_object, perfect_models)
+         
+        # Internal contours area calculation
+        infill_contours_image, infill_areas = AreaCalculation.calculate_areas(
+            image.shape, 
+            perfect_models[ssim_max_score_index], 
+            reference_object_width, 
+            reference_object_pixels_area)
+        
+        exit()
         
         # Load results
         Load.create_pdf_report(
@@ -99,13 +102,13 @@ class AnomalyDetection(object):
             perfect_models[ssim_max_score_index], 
             masked_3d_object, 
             masked_3d_object_with_defects, 
-            # Images and data for areas
-            infill_contours_image, 
-            infill_areas, 
             # Scores and errors
             ssim_max_score, 
             ppm_degree_offset[ssim_max_score_index], 
             impresion_defects_total_diff, 
             segmentation_defects_total_diff, 
+            # Images and data for areas
+            infill_contours_image, 
+            infill_areas, 
             # Extra data
             metadata_file)

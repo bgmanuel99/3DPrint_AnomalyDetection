@@ -16,20 +16,25 @@ class Load(object):
     @classmethod
     def create_pdf_report(
             cls, 
+            # Input process data
             image_name: str, 
             gcode_name: str, 
             metadata_name: str, 
             reference_object_width: str, 
+            # Images
             original_image: np.ndarray, 
             perfect_model: np.ndarray, 
             masked_3d_object: np.ndarray, 
             masked_3d_object_with_defects: np.ndarray, 
-            infill_contours_image: np.ndarray, 
-            infill_areas: List[List[object]], 
+            # Scores and errors
             ssim_max_score: float, 
             pixels_per_metric: float, 
             impresion_defects_total_diff: float, 
             segmentation_defects_total_diff: float, 
+            # Images and data for areas
+            infill_contours_image: np.ndarray, 
+            infill_areas: List[List[object]], 
+            # Extra data
             metadata_file: io.TextIOWrapper | str) -> None:
         
         # Check if output directory exists

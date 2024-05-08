@@ -45,6 +45,7 @@ class AreaCalculation(object):
     @classmethod
     def calculate_areas(
             cls, 
+            image_shape: tuple[float], 
             masked_3d_object: np.ndarray, 
             reference_object_width: float, 
             reference_object_pixels_area: float) -> tuple[
@@ -68,21 +69,23 @@ class AreaCalculation(object):
                 in millimeters squared
         """
         
-        segmented_3d_object = CommonFunctionalities.get_segmented_image(
-            masked_3d_object)
+        # segmented_3d_object = CommonFunctionalities.get_segmented_image(
+        #     masked_3d_object)
         
-        opening = CommonMorphologyOperations.morphologyEx_opening(
-            segmented_3d_object, (5, 5))
+        # opening = CommonMorphologyOperations.morphologyEx_opening(
+        #     segmented_3d_object, (5, 5))
         
-        CommonPrints.print_image("opening", opening, 600)
+        # CommonPrints.print_image("opening", opening, 600, True)
 
-        cnts = cls._find_and_sort_contours(opening)
+        cnts = cls._find_and_sort_contours(masked_3d_object)
+        
+        cnts = [c for c in cnts if cv2.contourArea(c) > 1000]
 
         infill_contours_image = cls._draw_and_enumerate_contours(
-            masked_3d_object.shape, cnts)
+            image_shape, cnts)
         
         CommonPrints.print_image(
-            "infill contours image", infill_contours_image, 600)
+            "infill contours image", infill_contours_image, 600, True)
         
         infill_pixels_areas = cls._retrieve_contours_pixels_areas(cnts)
 
@@ -209,9 +212,17 @@ class AreaCalculation(object):
         # Calculate area in mm2 of the reference object
         reference_object_area = math.pow(reference_object_width/2, 2) * math.pi
         
+        print("REFERENCE OBJECT REAL AREA", reference_object_area)
+        
         infill_areas = []
         
         for i, infill_pixels_area in infill_pixels_areas:
+            if i == 21: 
+                print("REFERENCE OBJECT PIXELS AREA", reference_object_pixels_area)
+                print("INFILL PIXELS AREA", infill_pixels_area)
+                print("INFILL REAL AREA", infill_pixels_area 
+                * reference_object_area 
+                / reference_object_pixels_area)
             infill_areas.append([
                 i, 
                 infill_pixels_area 

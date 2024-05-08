@@ -216,6 +216,8 @@ class CommonFunctionalities(object):
                 max(bottom_right[1], bottom_left[1]), 
             max(top_left[0], bottom_left[0]):
                 max(top_right[0], bottom_right[0])]
+        
+        CommonPrints.print_image("external", external_contour_box, 600)
             
         translated_image = np.zeros(original_shape, dtype=np.uint8)
         
