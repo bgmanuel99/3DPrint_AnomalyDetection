@@ -6,7 +6,7 @@ from typing import List
 from imutils import perspective
 
 from app.utils.constants.constants import *
-from app.common.common import CommonFunctionalities
+from app.common.common_functionalities import CommonFunctionalities
 
 class ImageGenerator(object):
     """This class contains methods to create the image of the perfect model 

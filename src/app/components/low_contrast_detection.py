@@ -3,7 +3,7 @@ import numpy
 from skimage.exposure import is_low_contrast
 
 from app.utils.exceptions.low_contrast_exceptions import *
-from app.common.common import CommonPrints
+from app.common.common_prints import CommonPrints
 
 # TODO: Search for histogram equalization to enhance image contrast if it is too low
 class LowContrastDetection(object):

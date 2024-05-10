@@ -58,7 +58,9 @@ class AnomalyDetection(object):
          ppm_degree_offset, 
          middle_coords_3d_object, 
          top_left_coord_3d_object, 
-         reference_object_pixels_area) = ImageSegmetation.segment_image(image)
+         reference_object_pixels_area, 
+         ssim_max_score_reference_object) = ImageSegmetation.segment_image(
+            image)
            
         # Analize gcode file and extract data
         coords: List[List[object]] = GCodeAnalizer.extract_data(gcode_file)
@@ -76,7 +78,7 @@ class AnomalyDetection(object):
         # Mask and defect detection
         (masked_3d_object_with_defects, 
          ssim_max_score_index, 
-         ssim_max_score, 
+         ssim_max_score_3d_object, 
          impresion_defects_total_diff, 
          segmentation_defects_total_diff) = DefectsDetection.detect_defects(
             masked_3d_object, perfect_models)
@@ -103,12 +105,13 @@ class AnomalyDetection(object):
             masked_3d_object, 
             masked_3d_object_with_defects, 
             # Scores and errors
-            ssim_max_score, 
+            ssim_max_score_3d_object, 
             ppm_degree_offset[ssim_max_score_index], 
             impresion_defects_total_diff, 
             segmentation_defects_total_diff, 
             # Images and data for areas
             infill_contours_image, 
             infill_areas, 
+            ssim_max_score_reference_object, 
             # Extra data
             metadata_file)

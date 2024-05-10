@@ -1,9 +1,9 @@
 import cv2
 import numpy as np
 from typing import List
-from skimage.metrics import structural_similarity
 
-from app.common.common import CommonPrints, CommonFunctionalities
+from app.common.common_functionalities import CommonFunctionalities
+from app.common.common_prints import CommonPrints
 
 class DefectsDetection(object):
     """Class containing methods to detect defects in the real 3d printed 
@@ -16,11 +16,6 @@ class DefectsDetection(object):
             Method to detect exact defects between different perfect models of 
             the 3d impresion and a transformed and segmented image of the real 
             3d printed object
-        _calculate_ssim_max_score (
-                segmented_3d_object: np.ndarray, 
-                perfect_models: List[np.ndarray]):
-            Private method to calculate the max SSIM score between the perfect 
-            models and the segmented 3d object
         _separate_impresion_and_segmentation_defects (
                 masked_3d_object_shape: tuple[int], 
                 cnts: tuple[np.ndarray]):
@@ -80,10 +75,10 @@ class DefectsDetection(object):
         
         # Calculate ssim max score between the segmented 3d printed object and 
         # the perfect models
-        ssim_max_score, ssim_max_score_index = cls._calculate_ssim_max_score(
-            segmented_3d_object, perfect_models)
+        ssim_max_score, ssim_max_score_index = CommonFunctionalities \
+            .calculate_ssim_max_score(segmented_3d_object, perfect_models)
         
-        print("MAX SSIM SCORE:", ssim_max_score)
+        print("MAX SSIM SCORE DEFECT DETECTION:", ssim_max_score)
         
         # Subtract the segmented 3d printed object to the perfect model
         # to extract impresion and segmentation defects
@@ -136,39 +131,6 @@ class DefectsDetection(object):
             ssim_max_score, 
             impresion_defects_total_diff, 
             segmentation_defects_total_diff)
-        
-    @classmethod
-    def _calculate_ssim_max_score(
-            cls, 
-            segmented_3d_object: np.ndarray, 
-            perfect_models: List[np.ndarray]) -> tuple[float, int]:
-        """Method to calculate the max SSIM score between the perfect models 
-        and the segmented 3d object
-
-        Parameters:
-            segmented_3d_object (np.ndarray): 
-                Image of the segmented 3d object
-            perfect_models (List[np.ndarray]): 
-                List of perfect models
-
-        Returns:
-            tuple[float, int]: 
-                - SSIM max score
-                - Index to know which perfect model gave the best SSIM score
-        """
-        
-        ssim_max_score = 0
-        ssim_max_score_index = 0
-        
-        for i in range(len(perfect_models)):
-            ssim_score = structural_similarity(
-                perfect_models[i], segmented_3d_object, full=True)[0]
-            
-            if ssim_score > ssim_max_score:
-                ssim_max_score = ssim_score
-                ssim_max_score_index = i
-        
-        return ssim_max_score, ssim_max_score_index
     
     @classmethod
     def _separate_impresion_and_segmentation_defects(

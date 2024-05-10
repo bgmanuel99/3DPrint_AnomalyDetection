@@ -9,7 +9,7 @@ from reportlab.pdfgen.canvas import Canvas
 from reportlab.pdfbase.pdfmetrics import stringWidth
 
 from app.utils.exceptions.load_exceptions import *
-from app.common.common import CommonPrints
+from app.common.common_prints import CommonPrints
 from app.utils.constants.constants import *
 
 class Load(object):
@@ -34,6 +34,7 @@ class Load(object):
             # Images and data for areas
             infill_contours_image: np.ndarray, 
             infill_areas: List[List[object]], 
+            ssim_max_score_reference_object: float, 
             # Extra data
             metadata_file: io.TextIOWrapper | str) -> None:
         

@@ -4,7 +4,7 @@ import cv2
 import numpy as np
 
 from app.utils.exceptions.extract_exceptions import *
-from app.common.common import CommonPrints
+from app.common.common_prints import CommonPrints
 from app.utils.constants.constants import *
 
 class Extract(object):

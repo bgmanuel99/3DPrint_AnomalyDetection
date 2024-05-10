@@ -2,94 +2,9 @@ import cv2
 import imutils
 import numpy as np
 from typing import List
+from skimage.metrics import structural_similarity
 
-class CommonPrints(object):
-    """Class containing common functions of printing
-
-    Methods:
-        system_out (exception: Exception):
-            Static method for printing exceptions and exiting from the 
-            execution
-        print_image (
-                image_name: str, 
-                image: np.ndarray, 
-                width=None, 
-                show_flag=False):
-            Static method to print an image with opencv imshow function
-        print_images (
-                image_names: List[str], 
-                images: List[np.ndarray], 
-                width = None, 
-                show_flag=False):
-            Static method to print multiple images with opencv imshow function
-    """
-    
-    @staticmethod
-    def system_out(exception: Exception) -> None:
-        """Static method for printing exceptions and exiting from the 
-        execution
-
-        Parameters:
-            exception (Exception): 
-                Exception given during execution to be printed out
-        """
-        
-        print(exception)
-        exit()
-        
-    @staticmethod    
-    def print_image(
-            image_name: str, 
-            image: np.ndarray, 
-            width: int=None, 
-            show_flag: bool=False) -> None:
-        """Static method to print an image with opencv imshow function
-
-        Parameters:
-            image_name (str): Image name
-            image (np.ndarray): Image to print
-            width (int, optional): Width of the image. Defaults to None.
-            show_flag (bool, optional): 
-                Flag to show or not the image. Defaults to False.
-        """
-        
-        if show_flag:
-            if width: 
-                image = imutils.resize(image, width=width)
-            else:
-                image = imutils.resize(image, width=600)
-            
-            cv2.imshow(image_name, image)
-            cv2.waitKey(0)
-            cv2.destroyAllWindows()
-        
-    @staticmethod
-    def print_images(
-            image_names: List[str], 
-            images: List[np.ndarray], 
-            width: int=None, 
-            show_flag: bool=False) -> None:
-        """Static method to print multiple images with opencv imshow function
-
-        Parameters:
-            image_names (List[str]): Image name
-            images (List[np.ndarray]): Image to print
-            width (int, optional): Width of the image. Defaults to None.
-            show_flag (bool, optional): 
-                Flag to show or not the image. Defaults to False.
-        """
-        
-        if show_flag:
-            for image_name, image in zip(image_names, images):
-                if width: 
-                    image = imutils.resize(image, width=width)
-                else:
-                    image = imutils.resize(image, width=600)
-                
-                cv2.imshow(image_name, image)
-                
-            cv2.waitKey(0)
-            cv2.destroyAllWindows()
+from app.common.common_prints import CommonPrints
 
 class CommonFunctionalities(object):
     """Class containing common functionalities of the modules
@@ -113,6 +28,11 @@ class CommonFunctionalities(object):
                 original_shape: tuple[float], 
                 extra_offset: int):
             Method to translate and object to another part of the image
+        calculate_ssim_max_score (
+                segmented_3d_object: np.ndarray, 
+                perfect_models: List[np.ndarray]):
+            Method to calculate the max SSIM score between a segmented image 
+            and its perfect models
     """
     
     @staticmethod
@@ -233,34 +153,35 @@ class CommonFunctionalities(object):
         
         return translated_image
     
-class CommonMorphologyOperations(object):
-    """Class contining common functions for morphology operations over images
-    
-    Methods:
-        morphologyEx_opening (
-                segmented_image: np.ndarray, 
-                kernel_size: tuple[float, float]):
-            Method to make an opening morphology operation over an image
-    """
-    
-    @staticmethod
-    def morphologyEx_opening(
-            segmented_image: np.ndarray, 
-            kernel_size: tuple[float, float]) -> np.ndarray:
-        """Method to make an opening morphology operation over an image
+    @classmethod
+    def calculate_ssim_max_score(
+            cls, 
+            segmented_3d_object: np.ndarray, 
+            perfect_models: List[np.ndarray]) -> tuple[float, int]:
+        """Method to calculate the max SSIM score between a segmented image 
+        and its perfect models
 
         Parameters:
-            segmented_image (np.ndarray): 
-                Image to which the operation is performed
-            kernel_size (tuple[float, float]): 
-                Kernel size of the opening operation
+            segmented_3d_object (np.ndarray): 
+                Image of the segmented 3d object
+            perfect_models (List[np.ndarray]): 
+                List of perfect models
 
         Returns:
-            np.ndarray: Image with the opening operation
+            tuple[float, int]: 
+                - SSIM max score
+                - Index to know which perfect model gave the best SSIM score
         """
         
-        kernel = np.ones(kernel_size, np.uint8)
+        ssim_max_score = 0
+        ssim_max_score_index = 0
         
-        opening = cv2.morphologyEx(segmented_image, cv2.MORPH_OPEN, kernel)
+        for i in range(len(perfect_models)):
+            ssim_score = structural_similarity(
+                perfect_models[i], segmented_3d_object, full=True)[0]
+            
+            if ssim_score > ssim_max_score:
+                ssim_max_score = ssim_score
+                ssim_max_score_index = i
         
-        return opening
+        return ssim_max_score, ssim_max_score_index

@@ -1,6 +1,6 @@
 import sys
 
-from common.common import CommonPrints
+from common.common_prints import CommonPrints
 from utils.exceptions.main_exceptions import *
 from components.anomaly_detection import AnomalyDetection
 
