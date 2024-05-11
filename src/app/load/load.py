@@ -3,6 +3,7 @@ import io
 import cv2
 import numpy as np
 from typing import List
+import time
 from reportlab.lib import colors
 from reportlab.lib.units import cm
 from reportlab.lib.colors import Color
@@ -190,12 +191,16 @@ class Load(object):
              cv2.flip(masked_3d_object_with_defects, 0), 
              cv2.flip(infill_contours_image, 0))))
         
-        # Create pdf report
-        cls._create_pdf_report(image_name, gcode_name)
-        
-        # Delete the resultant images from the output folder after inserting
-        # them in the report pdf
-        cls._delete_loaded_images()
+        try:
+            # Create pdf report
+            cls._create_pdf_report(image_name, gcode_name)
+        except Exception as e:
+            cls._delete_loaded_images()
+            CommonPrints.system_out(e)
+        finally:
+            # Delete the resultant images from the output folder after inserting
+            # them in the report pdf
+            cls._delete_loaded_images()
         
     @classmethod
     def _create_pdf_report(cls, image_name: str, gcode_name: str) -> None:
