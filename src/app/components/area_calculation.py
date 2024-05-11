@@ -210,8 +210,9 @@ class AreaCalculation(object):
         for i, infill_pixels_area in infill_pixels_areas:
             infill_areas.append([
                 i, 
-                infill_pixels_area 
-                * reference_object_area 
-                / reference_object_pixels_area])
+                round(infill_pixels_area 
+                      * reference_object_area 
+                      / reference_object_pixels_area, 
+                      4)])
             
         return infill_areas
