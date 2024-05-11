@@ -29,7 +29,7 @@ class CommonFunctionalities(object):
                 extra_offset: int):
             Method to translate and object to another part of the image
         calculate_ssim_max_score (
-                segmented_3d_object: np.ndarray, 
+                segmented_object: np.ndarray, 
                 perfect_models: List[np.ndarray]):
             Method to calculate the max SSIM score between a segmented image 
             and its perfect models
@@ -156,14 +156,14 @@ class CommonFunctionalities(object):
     @classmethod
     def calculate_ssim_max_score(
             cls, 
-            segmented_3d_object: np.ndarray, 
+            segmented_object: np.ndarray, 
             perfect_models: List[np.ndarray]) -> tuple[float, int]:
         """Method to calculate the max SSIM score between a segmented image 
         and its perfect models
 
         Parameters:
-            segmented_3d_object (np.ndarray): 
-                Image of the segmented 3d object
+            segmented_object (np.ndarray): 
+                Image of the segmented object
             perfect_models (List[np.ndarray]): 
                 List of perfect models
 
@@ -178,7 +178,7 @@ class CommonFunctionalities(object):
         
         for i in range(len(perfect_models)):
             ssim_score = structural_similarity(
-                perfect_models[i], segmented_3d_object, full=True)[0]
+                perfect_models[i], segmented_object, full=True)[0]
             
             if ssim_score > ssim_max_score:
                 ssim_max_score = ssim_score

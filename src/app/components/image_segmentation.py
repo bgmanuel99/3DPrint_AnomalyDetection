@@ -221,7 +221,6 @@ class ImageSegmetation(object):
         box = CommonFunctionalities.get_box_coordinates(cnts[0])
         (top_left, top_right, bottom_right, bottom_left) = perspective \
             .order_points(box)
-        print(top_left, top_right, bottom_right, bottom_left)
         
         reference_left_mid_point = cls._mid_point(
             top_left, bottom_left)
@@ -230,8 +229,6 @@ class ImageSegmetation(object):
         
         reference_object_width = dist.euclidean(
             reference_left_mid_point, reference_right_mid_point)
-        
-        print("REFERENCE OBJECT WIDTH", reference_object_width)
         
         # Obtain a list of pixels per metric values variations representing 
         # degree offsets when taking the picture of the original image
@@ -266,10 +263,6 @@ class ImageSegmetation(object):
         ssim_max_score, ssim_max_score_index = CommonFunctionalities \
             .calculate_ssim_max_score(
                 segmented_reference_object, reference_object_perfect_models)
-            
-        print(
-            "REFERENCE OBJECT ELECTED RADIUS", 
-            referece_object_perfect_models_radius[ssim_max_score_index])
         
         # Find perfect model object contour
         cnts = CommonFunctionalities.find_and_grab_contours(
@@ -396,9 +389,9 @@ class ImageSegmetation(object):
         Parameters:
             masked_object (np.ndarray): 
                 Image of the masked object
-            top_left_coord_3d_object (tuple[float]): 
+            top_left_coord (tuple[float]): 
                 Top left coordinates of the masked object
-            printed_object_box_coordinates (tuple[tuple[float]]): 
+            box_coordinates (tuple[tuple[float]]): 
                 Box coordinates of the masked object
             use_external_contour:
                 Boolean to know whether to use the external contour of the 
