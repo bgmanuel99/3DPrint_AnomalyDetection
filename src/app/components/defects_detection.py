@@ -78,8 +78,6 @@ class DefectsDetection(object):
         ssim_max_score, ssim_max_score_index = CommonFunctionalities \
             .calculate_ssim_max_score(segmented_3d_object, perfect_models)
         
-        print("MAX SSIM SCORE DEFECT DETECTION:", ssim_max_score)
-        
         # Subtract the segmented 3d printed object to the perfect model
         # to extract impresion and segmentation defects
         subtract = cv2.subtract(

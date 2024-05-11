@@ -26,17 +26,14 @@ class Load(object):
     _metadata_name: str = None
     _reference_object_width: float = None
     _original_image: np.ndarray = None
-    _perfect_model: np.ndarray = None
-    _masked_3d_object: np.ndarray = None
-    _masked_3d_object_with_defects: np.ndarray = None
     _ssim_max_score: float = None
     _pixels_per_metric: float = None
     _impresion_defects_total_diff: float = None
     _segmentation_defect_total_diff: float = None
-    _infill_contours_image: np.ndarray = None
     _infill_areas: List[List[object]] = None
     _ssim_max_score_reference_object: float = None
     _metadata_file: io.TextIOWrapper | str = None
+    _image_paths: List[str] = None
     
     @classmethod
     def load_data(
@@ -67,14 +64,10 @@ class Load(object):
         cls._metadata_name = metadata_name
         cls._reference_object_width = reference_object_width
         cls._original_image = original_image
-        cls._perfect_model = perfect_model
-        cls._masked_3d_object = masked_3d_object
-        cls._masked_3d_object_with_defects = masked_3d_object_with_defects
         cls._ssim_max_score = ssim_max_score
         cls._pixels_per_metric = pixels_per_metric
         cls._impresion_defects_total_diff = impresion_defects_total_diff
         cls._segmentation_defect_total_diff = segmentation_defects_total_diff
-        cls._infill_contours_image = infill_contours_image
         cls._infill_areas = infill_areas
         cls._ssim_max_score_reference_object = ssim_max_score_reference_object
         cls._metadata_file = metadata_file
@@ -83,22 +76,27 @@ class Load(object):
         cls._check_output_directory()
         
         # Load the resultant images to the output folder
-        image_paths = cls._load_images((
+        cls._image_paths = cls._load_images((
             ("original_image", 
              "perfect_model", 
              "masked_3d_object", 
-             "masked_3d_object_with_defects"), 
-            (original_image, 
-             perfect_model, 
-             masked_3d_object, 
-             masked_3d_object_with_defects)))
+             "masked_3d_object_with_defects", 
+             "infill_contours_image"), 
+            # Flip the images vertically so when they are draw in the report 
+            # they stay in the correct position as the report will draw them
+            # upside down
+            (cv2.flip(original_image, 0), 
+             cv2.flip(perfect_model, 0), 
+             cv2.flip(masked_3d_object, 0), 
+             cv2.flip(masked_3d_object_with_defects, 0), 
+             cv2.flip(infill_contours_image, 0))))
         
         # Create pdf report
         cls._create_pdf_report(image_name, gcode_name)
         
         # Delete the resultant images from the output folder after inserting
         # them in the report pdf
-        cls._delete_loaded_images(image_paths)
+        cls._delete_loaded_images()
         
     @classmethod
     def _create_pdf_report(cls, image_name: str, gcode_name: str) -> None:
@@ -138,12 +136,6 @@ class Load(object):
         # Insert defects calculation data
         cls._insert_defects_calculation_data()
         cls._draw_text_and_reset_page()
-        
-        # for image_path, offset in zip(image_paths, list(range(1, 5))):
-        #     report.drawInlineImage(image_path, offset*cm, 1*cm, 1*cm, 1*cm)
-          
-        # for finishing a page and start drawing in a new one  
-        # report.showPage()
         
         # Save report
         cls._report.save()
@@ -250,8 +242,7 @@ class Load(object):
         cls._insert_text(
             x_coord=0.5, 
             y_coord=0.25,
-            text_line="{} %".format(
-                cls._ssim_max_score))
+            text_line="{} %".format(cls._ssim_max_score))
         
         # Impresion error
         cls._insert_text(
@@ -262,8 +253,7 @@ class Load(object):
         cls._insert_text(
             x_coord=0.5, 
             y_coord=0.25,
-            text_line="{} %".format(
-                cls._impresion_defects_total_diff))
+            text_line="{} %".format(cls._impresion_defects_total_diff))
         
         # Segmentation error
         cls._insert_text(
@@ -274,8 +264,52 @@ class Load(object):
         cls._insert_text(
             x_coord=0.5, 
             y_coord=0.25,
-            text_line="{} %".format(
-                cls._segmentation_defect_total_diff))
+            text_line="{} %".format(cls._segmentation_defect_total_diff))
+        
+        # Original image
+        cls._report.drawImage(
+            image=cls._image_paths[0], 
+            x=(cls._report_width-(5*cm))/2, 
+            y=cls._report_height*0.33, 
+            width=5*cm, 
+            height=7*cm)
+        cls._insert_text(
+            x_coord=4.75, 
+            y_coord=8, 
+            text_line="Original image, size: {}".format(
+                cls._original_image.shape))
+            
+        # Perfect model, masked 3d object, masked 3d object with errors
+        cls._report.drawImage(
+            image=cls._image_paths[1], 
+            x=cls._report_width*0.1, 
+            y=cls._report_height*0.63, 
+            width=5*cm, 
+            height=7*cm)
+        cls._report.drawImage(
+            image=cls._image_paths[2], 
+            x=cls._report_width*0.39, 
+            y=cls._report_height*0.63, 
+            width=5*cm, 
+            height=7*cm)
+        cls._report.drawImage(
+            image=cls._image_paths[3], 
+            x=cls._report_width*0.68, 
+            y=cls._report_height*0.63, 
+            width=5*cm, 
+            height=7*cm)
+        cls._insert_text(
+            x_coord=-5.5, 
+            y_coord=8.8, 
+            text_line=(
+                "From left to right: [1] Perfect model, size: {}. " 
+                "[2] Masked 3d printed object, size: {}."
+            ).format(cls._original_image.shape, cls._original_image.shape))
+        cls._insert_text(
+            x_coord=3.9, 
+            y_coord=0.25, 
+            text_line="[3] Masked 3d printed object with defects, size {}." \
+                .format(cls._original_image.shape))
     
     @classmethod
     def _insert_text(
@@ -320,8 +354,8 @@ class Load(object):
         return image_paths
     
     @classmethod
-    def _delete_loaded_images(cls, image_paths: List[str]) -> None:
-        for image_path in image_paths:
+    def _delete_loaded_images(cls) -> None:
+        for image_path in cls._image_paths:
             if os.path.exists(image_path): 
                 os.remove(image_path)
     
