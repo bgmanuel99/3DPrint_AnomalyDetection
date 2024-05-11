@@ -3,10 +3,13 @@ import io
 import cv2
 import numpy as np
 from typing import List
+from reportlab.lib import colors
 from reportlab.lib.units import cm
+from reportlab.lib.colors import Color
 from reportlab.lib.pagesizes import A4
 from reportlab.pdfgen.canvas import Canvas
 from reportlab.pdfbase.pdfmetrics import stringWidth
+from reportlab.pdfgen.textobject import PDFTextObject
 
 from app.utils.exceptions.load_exceptions import *
 from app.common.common_prints import CommonPrints
@@ -14,7 +17,7 @@ from app.utils.constants.constants import *
 
 class Load(object):
     @classmethod
-    def create_pdf_report(
+    def load_data(
             cls, 
             # Input process data
             image_name: str, 
@@ -39,23 +42,28 @@ class Load(object):
             metadata_file: io.TextIOWrapper | str) -> None:
         
         # Check if output directory exists
-        cls._check_directory()
+        cls._check_output_directory()
         
         # Load the resultant images to the output folder
         image_paths = cls._load_images((
-            (
-                "original_image", 
-                "perfect_model", 
-                "masked_3d_object", 
-                "masked_3d_object_with_defects"), 
-            (
-                original_image, 
-                perfect_model, 
-                masked_3d_object, 
-                masked_3d_object_with_defects)
-        ))
+            ("original_image", 
+             "perfect_model", 
+             "masked_3d_object", 
+             "masked_3d_object_with_defects"), 
+            (original_image, 
+             perfect_model, 
+             masked_3d_object, 
+             masked_3d_object_with_defects)))
         
         # Create pdf report
+        cls._create_pdf_report(image_name, gcode_name)
+        
+        # Delete the resultant images from the output folder after inserting
+        # them in the report pdf
+        cls._delete_loaded_images(image_paths)
+        
+    @classmethod
+    def _create_pdf_report(cls, image_name: str, gcode_name: str) -> None:
         report = Canvas(
             "{}{}{}_{}.{}".format(
                 os.path.dirname(os.getcwd()), 
@@ -68,28 +76,54 @@ class Load(object):
         
         PAGE_WIDTH, PAGE_HEIGHT = A4
         
-        report.setTitle("3D_printing_defect_detection_report")
+        # Set file title
+        report.setTitle("3D printing defect detection report")
         
+        # Set report title
         report_title = "3D PRINTING DEFECT DETECTION REPORT"
-        report_title_width = stringWidth(report_title, "Times-Bold", 18)
+        report_title_width = stringWidth(report_title, "Times-Bold", 20)
+        
         textobject = report.beginText(
             (PAGE_WIDTH-report_title_width)/2, PAGE_HEIGHT*0.1)
-        textobject.setFont("Times-Bold", 18)
+        textobject.setFont("Times-Bold", 20)
         textobject.textLine("3D PRINTING DEFECT DETECTION REPORT")
         
-        report.drawText(textobject)
+        # Insert process input data
+        cls._insert_text(
+            textobject, 
+            -1.5, 
+            1, 
+            font_size=16, 
+            color=colors.red, 
+            text_line="here")
         
         # for image_path, offset in zip(image_paths, list(range(1, 5))):
         #     report.drawInlineImage(image_path, offset*cm, 1*cm, 1*cm, 1*cm)
           
         # for finishing a page and start drawing in a new one  
         # report.showPage()
+        
+        report.drawText(textobject)
             
         report.save()
         
-        # Delete the resultant images from the output folder after inserting
-        # them in the report pdf
-        cls._delete_load_images(image_paths)
+    @classmethod
+    def _insert_text(
+            cls, 
+            textobject: PDFTextObject, 
+            x_coord: float, 
+            y_coord: float,
+            units: float=cm,  
+            font_type: str="Times-Roman", 
+            font_size: str=11, 
+            color: Color=colors.black, 
+            alpha: float=1.0, 
+            text_line: str=""):
+        textobject.moveCursor(x_coord*units, y_coord*units)
+        textobject.setFont(font_type, font_size)
+        textobject.setFillColor(color)
+        textobject.setFillAlpha(alpha)
+        textobject.textLine(text_line)
         
     @classmethod
     def _load_images(
@@ -111,13 +145,13 @@ class Load(object):
         return image_paths
     
     @classmethod
-    def _delete_load_images(cls, image_paths: List[str]) -> None:
+    def _delete_loaded_images(cls, image_paths: List[str]) -> None:
         for image_path in image_paths:
             if os.path.exists(image_path): 
                 os.remove(image_path)
     
     @classmethod
-    def _check_directory(cls) -> None:
+    def _check_output_directory(cls) -> None:
         """Method to check if the output directory exists.
 
         Raises:

@@ -75,7 +75,7 @@ class AreaCalculation(object):
             original_image_shape, cnts)
         
         CommonPrints.print_image(
-            "infill contours image", infill_contours_image, 600, True)
+            "infill contours image", infill_contours_image, 600)
         
         infill_pixels_areas = cls._retrieve_contours_pixels_areas(cnts)
 

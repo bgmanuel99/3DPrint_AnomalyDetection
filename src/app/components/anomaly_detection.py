@@ -90,10 +90,8 @@ class AnomalyDetection(object):
             reference_object_width, 
             reference_object_pixels_area)
         
-        exit()
-        
         # Load results
-        Load.create_pdf_report(
+        Load.load_data(
             # Input process data
             image_name, 
             gcode_name, 

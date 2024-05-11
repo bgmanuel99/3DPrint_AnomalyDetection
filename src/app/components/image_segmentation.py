@@ -209,8 +209,7 @@ class ImageSegmetation(object):
         CommonPrints.print_image(
             "segmented_reference_object", 
             segmented_reference_object, 
-            600, 
-            True)
+            600)
         
         cnts = CommonFunctionalities \
             .find_and_grab_contours(segmented_reference_object)

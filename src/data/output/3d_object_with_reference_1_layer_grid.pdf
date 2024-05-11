@@ -1,8 +1,8 @@
-%PDF-1.3
+%PDF-1.4
 %“Œ‹ž ReportLab Generated PDF document http://www.reportlab.com
 1 0 obj
 <<
-/F1 2 0 R /F2 3 0 R
+/F1 2 0 R /F2 3 0 R /F3 4 0 R
 >>
 endobj
 2 0 obj
@@ -17,58 +17,68 @@ endobj
 endobj
 4 0 obj
 <<
-/Contents 8 0 R /MediaBox [ 0 0 595.2756 841.8898 ] /Parent 7 0 R /Resources <<
-/Font 1 0 R /ProcSet [ /PDF /Text /ImageB /ImageC /ImageI ]
+/BaseFont /Times-Roman /Encoding /WinAnsiEncoding /Name /F3 /Subtype /Type1 /Type /Font
+>>
+endobj
+5 0 obj
+<<
+/Contents 9 0 R /MediaBox [ 0 0 595.2756 841.8898 ] /Parent 8 0 R /Resources <<
+/ExtGState <<
+/gRLs0 <<
+/ca .5
+>>
+>> /Font 1 0 R /ProcSet [ /PDF /Text /ImageB /ImageC /ImageI ]
 >> /Rotate 0 /Trans <<
 
 >> 
   /Type /Page
 >>
 endobj
-5 0 obj
-<<
-/PageMode /UseNone /Pages 7 0 R /Type /Catalog
->>
-endobj
 6 0 obj
 <<
-/Author (anonymous) /CreationDate (D:20240505233540-01'00') /Creator (ReportLab PDF Library - www.reportlab.com) /Keywords () /ModDate (D:20240505233540-01'00') /Producer (ReportLab PDF Library - www.reportlab.com) 
-  /Subject (unspecified) /Title (3D_printing_defect_detection_report) /Trapped /False
+/PageMode /UseNone /Pages 8 0 R /Type /Catalog
 >>
 endobj
 7 0 obj
 <<
-/Count 1 /Kids [ 4 0 R ] /Type /Pages
+/Author (anonymous) /CreationDate (D:20240511021200-01'00') /Creator (ReportLab PDF Library - www.reportlab.com) /Keywords () /ModDate (D:20240511021200-01'00') /Producer (ReportLab PDF Library - www.reportlab.com) 
+  /Subject (unspecified) /Title (3D printing defect detection report) /Trapped /False
 >>
 endobj
 8 0 obj
 <<
-/Filter [ /ASCII85Decode /FlateDecode ] /Length 154
+/Count 1 /Kids [ 5 0 R ] /Type /Pages
+>>
+endobj
+9 0 obj
+<<
+/Filter [ /ASCII85Decode /FlateDecode ] /Length 206
 >>
 stream
-GapY9YmSB&$j=p??ZBR[L`7cae2<4a%)iP8rh.W3OT/Z<#Ju$%"HO3)SmM=sP[O2=I!/mAmYa=Er'FkKi#@NDs5bN>N"XW>SH_)&G@udm1`!3eb;a"4\M0?dk-Up3^$(a5Jss-Und>B3>8oj%#LFtD+o~>endstream
+GapXO_$YfK&4Gu9`>mWad7mM5Y-"r7U([/1>&,R3dJo!)(0T:@JN#\X/sh_`B1Y,H*M,'+@q7HJ2#%Ncb(<h#:8FciECNf.3WTu_+O:+'k^8$TNgrds+Z:?"h#gZU_jr)UU?ObX0_CLRi%OkWe7s+P?[/C#.:W`iJ6t'G5fN0MQ/5"1#0V[9MX?jB>&jCtbBOGP-^#P]82.a~>endstream
 endobj
 xref
-0 9
+0 10
 0000000000 65535 f 
 0000000073 00000 n 
-0000000114 00000 n 
-0000000221 00000 n 
-0000000329 00000 n 
-0000000532 00000 n 
-0000000600 00000 n 
-0000000923 00000 n 
-0000000982 00000 n 
+0000000124 00000 n 
+0000000231 00000 n 
+0000000339 00000 n 
+0000000448 00000 n 
+0000000688 00000 n 
+0000000756 00000 n 
+0000001079 00000 n 
+0000001138 00000 n 
 trailer
 <<
 /ID 
-[<1bb6c0a0e5358c13c833c3fbb8057db4><1bb6c0a0e5358c13c833c3fbb8057db4>]
+[<d5dcf3420974ef1ffa06543a3ecc9c28><d5dcf3420974ef1ffa06543a3ecc9c28>]
 % ReportLab generated PDF document -- digest (http://www.reportlab.com)
 
-/Info 6 0 R
-/Root 5 0 R
-/Size 9
+/Info 7 0 R
+/Root 6 0 R
+/Size 10
 >>
 startxref
-1226
+1434
 %%EOF
