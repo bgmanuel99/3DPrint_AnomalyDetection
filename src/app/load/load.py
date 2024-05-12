@@ -3,7 +3,6 @@ import io
 import cv2
 import numpy as np
 from typing import List
-import time
 from reportlab.lib import colors
 from reportlab.lib.units import cm
 from reportlab.lib.colors import Color
