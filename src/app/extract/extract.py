@@ -27,6 +27,34 @@ class Extract(object):
                 metadata_path: str, 
                 metadata_name: str): 
             Private method to check if the input files exists and are files.
+            
+    Raises:
+        InputGCodeDirectoryNotFoundException: 
+            Raised when the gcode input directory is not found
+        InputImageDirectoryNotFoundException: 
+            Raised when the image input directory is not found
+        InputMetadataDirectoryNotFoundException:
+            Raised when the metadata input directory is not found
+        ExtractImageException: 
+            Raised when the input image cannot be found
+        ImageNotFileException: 
+            Raised when the input image is not a file
+        NonSupportedImageExtensionException:
+            Raised when the input image has a non supported file extension
+        ExtractGCodeFileException: 
+            Raised when the input gcode file cannot be found
+        GCodeNotFileException: 
+            Raised when the input gcode is not a file
+        NonSupportedGcodeExtensionException:
+            Raised when the input gcode file has a non supported file 
+            extension
+        ExtractMetadataException:
+            Raised when the input metadata file cannot be found
+        MetadataNotFileException:
+            Raised when the input metadata is not a file
+        NonSupportedMetadataExtensionException:
+            Raised when the input metadata file has a non supported file 
+            extension
     """
     
     @classmethod

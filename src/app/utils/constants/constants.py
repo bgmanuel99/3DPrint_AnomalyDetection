@@ -34,8 +34,6 @@ height_value_comment: str = ";HEIGHT:"
 input_strand: float = 2.404
 layer_height: float = 0.25
 
-# ******************* Image generator *******************
-
 # ******************* Load data *******************
 output_directory_path: str = "/data/output/"
 output_image_file_extension: str = "jpg"
