@@ -160,3 +160,5 @@ cython_debug/
 #.idea/
 
 .vscode/
+src/data/classification/images/*.jpg
+src/data/classification/labels/

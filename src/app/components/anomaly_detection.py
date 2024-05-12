@@ -1,10 +1,16 @@
 import os
 import sys
+import cv2
+import numpy as np
 from typing import List
+from keras.api.layers import Input, Lambda, Dense
+from keras.api.models import Model
 
 # Add the src directory to sys.path
 sys.path.append(os.path.dirname(os.getcwd()))
 
+from app.components.siamese_neural_network.siamese_neural_network import (
+    SiameseNeuralNetwork)
 from app.extract.extract import Extract
 from app.components.gcode_analizer import GCodeAnalizer
 from app.components.image_generator import ImageGenerator
@@ -76,12 +82,85 @@ class AnomalyDetection(object):
             reference_object_width (float): 
                 Known real width of the reference object
         """
+        
+        train_images = []
+        for i in range(0, 150):
+            
+            image = cv2.imread("{}{}{}.jpg".format(
+                os.path.dirname(os.getcwd()), 
+                "/data/classification/images/", 
+                i))
+            train_images.append(image)
+        train_images = np.array(train_images)
+        labels = []
+        labels_file = open("{}{}".format(
+                os.path.dirname(os.getcwd()), 
+                "/data/classification/labels/labels.txt"), "r")
+        for line in labels_file.readlines():
+            line = line.strip().replace("\n", "")
+            labels.append(line)
+        labels = np.array(labels)
+        labels = labels.astype(np.uint8)
+        
+        train_images = train_images / 255.0
+        
+        print("[INFO] preparing positive and negative pairs...")
+        (pairTrain, labelTrain) = SiameseNeuralNetwork.make_pairs(
+            train_images, labels)
+        print(len(pairTrain))
+        
+        # specify the shape of the inputs for our network
+        IMG_SHAPE = (2048, 1537, 3)
+        # specify the batch size and number of epochs
+        BATCH_SIZE = 64
+        EPOCHS = 10
+        
+        # configure the siamese network
+        print("[INFO] building siamese network...")
+        imgA = Input(shape=IMG_SHAPE)
+        imgB = Input(shape=IMG_SHAPE)
+        featureExtractor = SiameseNeuralNetwork._build_siamese_architecture(
+            IMG_SHAPE)
+        featsA = featureExtractor(imgA)
+        featsB = featureExtractor(imgB)
+        print(featsA)
+        
+        # finally, construct the siamese network
+        distance = Lambda(SiameseNeuralNetwork._euclidean_distance, output_shape=(None, 1))([featsA, featsB])
+        outputs = Dense(1, activation="sigmoid")(distance)
+        model = Model(inputs=[imgA, imgB], outputs=outputs)
+        
+        # compile the model
+        print("[INFO] compiling model...")
+        model.compile(loss="binary_crossentropy", optimizer="adam",
+            metrics=["accuracy"])
+        model.summary()
+        # train the model
+        print("[INFO] training model...")
+        history = model.fit(
+            [pairTrain[:, 0], pairTrain[:, 1]], labelTrain[:],
+            batch_size=BATCH_SIZE, 
+            epochs=EPOCHS)
+        
+        MODEL_PATH = "{}/data/classification/output/".format(os.path.dirname(os.getcwd()))
+        PLOT_PATH = MODEL_PATH = "{}/data/classification/output/".format(os.path.dirname(os.getcwd()))
+        
+        # serialize the model to disk
+        print("[INFO] saving siamese model...")
+        model.save(MODEL_PATH)
+        # plot the training history
+        print("[INFO] plotting training history...")
+        SiameseNeuralNetwork._plot_training(history, PLOT_PATH)
+
+        exit()
 
         # Extract data
-        gcode_file, image, metadata_file = Extract.extract_process_data(
-            gcode_name, 
-            image_name, 
-            metadata_name)
+        (gcode_file, 
+         image, 
+         metadata_file, 
+         classification_images, 
+         labels) = Extract.extract_process_data(
+            gcode_name, image_name, metadata_name)
 
         # Detect low contrast images
         LowContrastDetection.low_contrast_dectection(image)
@@ -115,6 +194,8 @@ class AnomalyDetection(object):
          impresion_defects_total_diff, 
          segmentation_defects_total_diff) = DefectsDetection.detect_defects(
             masked_3d_object, perfect_models)
+         
+        # Defect classification
          
         # Internal contours area calculation
         infill_contours_image, infill_areas = AreaCalculation.calculate_areas(
