@@ -4,7 +4,7 @@ import numpy as np
 from imutils import build_montages
 from keras.api.models import Model
 from keras.api.layers import (
-    Input, Conv2D, Dense, Dropout, GlobalAveragePooling2D, MaxPooling2D)
+    Input, Conv2D, Dense, Dropout, GlobalAveragePooling2D, MaxPooling2D, BatchNormalization, Activation)
 import tf_keras.api._v2.keras.backend as K
 import matplotlib.pyplot as plt
 
@@ -34,25 +34,27 @@ class SiameseNeuralNetwork(object):
             currentImage = images[idxA]
             label = labels[idxA]
             
-            # randomly pick an image that belongs to the *same* class
-            # label
-            idxB = np.random.choice(idx[label])
-            posImage = images[idxB]
+            for pair_index in idx[label]:
+                if idxA != pair_index:
+                    # randomly pick an image that belongs to the *same* class
+                    # label
+                    posImage = images[pair_index]
+                    
+                    # prepare a positive pair and update the images and labels
+                    # lists, respectively
+                    pairImages.append([currentImage, posImage])
+                    pairLabels.append([1])
             
-            # prepare a positive pair and update the images and labels
-            # lists, respectively
-            pairImages.append([currentImage, posImage])
-            pairLabels.append([1])
-            
-            # grab the indices for each of the class labels *not* equal to
-            # the current label and randomly pick an image corresponding
-            # to a label *not* equal to the current label
-            negIdx = np.where(labels != label)[0]
-            negImage = images[np.random.choice(negIdx)]
-            
-            # prepare a negative pair of images and update our lists
-            pairImages.append([currentImage, negImage])
-            pairLabels.append([0])
+            for neg_index in np.where(labels != label)[0]:
+                if idxA != neg_index:
+                    # grab the indices for each of the class labels *not* equal to
+                    # the current label and randomly pick an image corresponding
+                    # to a label *not* equal to the current label
+                    negImage = images[neg_index]
+                    
+                    # prepare a negative pair of images and update our lists
+                    pairImages.append([currentImage, negImage])
+                    pairLabels.append([0])
             
         # return a 2-tuple of our image pairs and labels
         return (np.array(pairImages), np.array(pairLabels))
@@ -79,6 +81,8 @@ class SiameseNeuralNetwork(object):
         # build the model
         model = Model(inputs, outputs)
         
+        model.summary()
+        
         # return the model to the calling function
         return model
     
@@ -100,12 +104,10 @@ class SiameseNeuralNetwork(object):
         plt.style.use("ggplot")
         plt.figure()
         plt.plot(H.history["loss"], label="train_loss")
-        plt.plot(H.history["val_loss"], label="val_loss")
         plt.plot(H.history["accuracy"], label="train_acc")
-        plt.plot(H.history["val_accuracy"], label="val_acc")
-        plt.title("Training Loss and Accuracy")
+        plt.title("Training Accuracy")
         plt.xlabel("Epoch #")
-        plt.ylabel("Loss/Accuracy")
+        plt.ylabel("Accuracy")
         plt.legend(loc="lower left")
         plt.savefig(plotPath)
         

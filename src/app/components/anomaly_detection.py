@@ -5,6 +5,7 @@ import numpy as np
 from typing import List
 from keras.api.layers import Input, Lambda, Dense
 from keras.api.models import Model
+import imutils
 
 # Add the src directory to sys.path
 sys.path.append(os.path.dirname(os.getcwd()))
@@ -90,8 +91,13 @@ class AnomalyDetection(object):
                 os.path.dirname(os.getcwd()), 
                 "/data/classification/images/", 
                 i))
+            image = imutils.resize(image, width=120)
             train_images.append(image)
+        print(train_images[0].shape)
         train_images = np.array(train_images)
+        cv2.imshow("train image", train_images[0])
+        cv2.waitKey(0)
+        cv2.destroyAllWindows()
         labels = []
         labels_file = open("{}{}".format(
                 os.path.dirname(os.getcwd()), 
@@ -110,10 +116,10 @@ class AnomalyDetection(object):
         print(len(pairTrain))
         
         # specify the shape of the inputs for our network
-        IMG_SHAPE = (2048, 1537, 3)
+        IMG_SHAPE = (159, 120, 3)
         # specify the batch size and number of epochs
         BATCH_SIZE = 64
-        EPOCHS = 10
+        EPOCHS = 5
         
         # configure the siamese network
         print("[INFO] building siamese network...")
@@ -123,7 +129,6 @@ class AnomalyDetection(object):
             IMG_SHAPE)
         featsA = featureExtractor(imgA)
         featsB = featureExtractor(imgB)
-        print(featsA)
         
         # finally, construct the siamese network
         distance = Lambda(SiameseNeuralNetwork._euclidean_distance, output_shape=(None, 1))([featsA, featsB])
@@ -142,8 +147,8 @@ class AnomalyDetection(object):
             batch_size=BATCH_SIZE, 
             epochs=EPOCHS)
         
-        MODEL_PATH = "{}/data/classification/output/".format(os.path.dirname(os.getcwd()))
-        PLOT_PATH = MODEL_PATH = "{}/data/classification/output/".format(os.path.dirname(os.getcwd()))
+        MODEL_PATH = "{}/data/classification/output/siamese_model.h5".format(os.path.dirname(os.getcwd()))
+        PLOT_PATH = "{}/data/classification/output/siamese_model_plot.png".format(os.path.dirname(os.getcwd()))
         
         # serialize the model to disk
         print("[INFO] saving siamese model...")
