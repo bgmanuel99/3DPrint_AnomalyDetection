@@ -3,11 +3,14 @@ import io
 import cv2
 import numpy as np
 from typing import List
+from decimal import Decimal
 from reportlab.lib import colors
 from reportlab.lib.units import cm
 from reportlab.lib.colors import Color
 from reportlab.lib.pagesizes import A4
+from reportlab.pdfbase import pdfmetrics
 from reportlab.pdfgen.canvas import Canvas
+from reportlab.pdfbase.ttfonts import TTFont
 from reportlab.pdfbase.pdfmetrics import stringWidth
 from reportlab.pdfgen.textobject import PDFTextObject
 
@@ -54,7 +57,7 @@ class Load(object):
                 x_coord: float = 0.0, 
                 y_coord: float = 0.0, 
                 units: float=cm, 
-                font_type: str="Times-Roman", 
+                font_type: str="Arial", 
                 font_size: str=11, 
                 color: Color=colors.black, 
                 alpha: float=1.0, 
@@ -210,6 +213,27 @@ class Load(object):
             gcode_name (str): Gcode file name
         """
         
+        pdfmetrics.registerFont(TTFont(
+            "Arial", 
+            "{}{}".format(
+                os.path.dirname(os.getcwd()), 
+                "/data/fonts/Arial.ttf")))
+        pdfmetrics.registerFont(TTFont(
+            "Arial-Bold", 
+            "{}{}".format(
+                os.path.dirname(os.getcwd()), 
+                "/data/fonts/Arial_Bold.ttf")))
+        pdfmetrics.registerFont(TTFont(
+            "Arial-Italic", 
+            "{}{}".format(
+                os.path.dirname(os.getcwd()), 
+                "/data/fonts/Arial_Italic.ttf")))
+        pdfmetrics.registerFont(TTFont(
+            "Arial-BoldItalic", 
+            "{}{}".format(
+                os.path.dirname(os.getcwd()), 
+                "/data/fonts/Arial_Bold_Italic.ttf")))
+        
         cls._report = Canvas(
             "{}{}{}_{}.{}".format(
                 os.path.dirname(os.getcwd()), 
@@ -227,12 +251,12 @@ class Load(object):
         
         # Set report title
         report_title = "3D PRINTING DEFECT DETECTION REPORT"
-        report_title_width = stringWidth(report_title, "Times-Bold", 21)
+        report_title_width = stringWidth(report_title, "Arial-Bold", 21)
         
         cls._textobject = cls._report.beginText(
             (cls._report_width-report_title_width)/2, cls._report_height*0.1)
         cls._insert_text(
-            font_type="Times-Bold", 
+            font_type="Arial-Bold", 
             font_size=21, 
             text_line="3D PRINTING DEFECT DETECTION REPORT")
         
@@ -267,7 +291,7 @@ class Load(object):
         cls._insert_text(
             x_coord=0.5, 
             y_coord=0.5, 
-            font_type="Times-Bold", 
+            font_type="Arial-Bold", 
             text_line="· Input image:")
         cls._insert_text(
             x_coord=0.5, 
@@ -275,13 +299,14 @@ class Load(object):
             text_line="Name: {}".format(cls._image_name))
         cls._insert_text(
             y_coord=0.25,
-            text_line="Size: {}".format(cls._original_image.shape))
+            text_line="Size: {} (height, width, channels) pixels.".format(
+                cls._original_image.shape))
         
         # Input gcode
         cls._insert_text(
             x_coord=-0.5, 
             y_coord=0.5, 
-            font_type="Times-Bold", 
+            font_type="Arial-Bold", 
             text_line="· Input Gcode:")
         cls._insert_text(
             x_coord=0.5, 
@@ -292,7 +317,7 @@ class Load(object):
         cls._insert_text(
             x_coord=-0.5, 
             y_coord=0.5, 
-            font_type="Times-Bold", 
+            font_type="Arial-Bold", 
             text_line="· Input reference object width:")
         cls._insert_text(
             x_coord=0.5, 
@@ -303,7 +328,7 @@ class Load(object):
         cls._insert_text(
             x_coord=-0.5, 
             y_coord=0.5, 
-            font_type="Times-Bold", 
+            font_type="Arial-Bold", 
             text_line="· Input metadata:")
         if cls._metadata_name != "":
             cls._insert_text(
@@ -325,7 +350,7 @@ class Load(object):
         else:
             cls._insert_text(
                 y_coord=0.25, 
-                font_type="Times-Bold", 
+                font_type="Arial-Bold", 
                 text_line="No input metadata was inserted")
             
     @classmethod
@@ -345,7 +370,7 @@ class Load(object):
         cls._insert_text(
             x_coord=0.5, 
             y_coord=0.5, 
-            font_type="Times-Bold", 
+            font_type="Arial-Bold", 
             text_line="· Pixels per metric:")
         cls._insert_text(
             x_coord=0.5, 
@@ -357,34 +382,36 @@ class Load(object):
         cls._insert_text(
             x_coord=-0.5, 
             y_coord=0.5, 
-            font_type="Times-Bold", 
+            font_type="Arial-Bold", 
             text_line="· Structural similarity index measure max score:")
         cls._insert_text(
             x_coord=0.5, 
             y_coord=0.25,
-            text_line="{} %".format(cls._ssim_max_score))
+            text_line="{:.3E} %".format(Decimal(cls._ssim_max_score)))
         
         # Impresion error
         cls._insert_text(
             x_coord=-0.5, 
             y_coord=0.5, 
-            font_type="Times-Bold", 
+            font_type="Arial-Bold", 
             text_line="· Impresion total error:")
         cls._insert_text(
             x_coord=0.5, 
             y_coord=0.25,
-            text_line="{} %".format(cls._impresion_defects_total_diff))
+            text_line="{:.3E} %".format(
+                Decimal(cls._impresion_defects_total_diff)))
         
         # Segmentation error
         cls._insert_text(
             x_coord=-0.5, 
             y_coord=0.5, 
-            font_type="Times-Bold", 
+            font_type="Arial-Bold", 
             text_line="· Segmentation total error:")
         cls._insert_text(
             x_coord=0.5, 
             y_coord=0.25,
-            text_line="{} %".format(cls._segmentation_defect_total_diff))
+            text_line="{:.3E} %".format(
+                Decimal(cls._segmentation_defect_total_diff)))
         
         # Original image
         cls._report.drawImage(
@@ -394,42 +421,52 @@ class Load(object):
             width=5*cm, 
             height=7*cm)
         cls._insert_text(
-            x_coord=4.75, 
-            y_coord=8, 
-            text_line="Original image, size: {}".format(
-                cls._original_image.shape))
+            x_coord=1.8, 
+            y_coord=8.0, 
+            text_line=(
+                "Original image, size: {} (height, width, channels) pixels."
+            ).format(cls._original_image.shape))
             
         # Perfect model, masked 3d object, masked 3d object with errors
         cls._report.drawImage(
             image=cls._image_paths[1], 
             x=cls._report_width*0.1, 
-            y=cls._report_height*0.63, 
+            y=cls._report_height*0.61, 
             width=5*cm, 
             height=7*cm)
         cls._report.drawImage(
             image=cls._image_paths[2], 
             x=cls._report_width*0.39, 
-            y=cls._report_height*0.63, 
+            y=cls._report_height*0.61, 
             width=5*cm, 
             height=7*cm)
         cls._report.drawImage(
             image=cls._image_paths[3], 
             x=cls._report_width*0.68, 
-            y=cls._report_height*0.63, 
+            y=cls._report_height*0.61, 
             width=5*cm, 
             height=7*cm)
         cls._insert_text(
-            x_coord=-5.5, 
-            y_coord=8.8, 
+            x_coord=-0.5, 
+            y_coord=8.0, 
             text_line=(
-                "From left to right: [1] Perfect model, size: {}. " 
-                "[2] Masked 3d printed object, size: {}."
+                "[Left] Perfect model, size: {} (height, width, channels) "
+                "pixels."
             ).format(cls._original_image.shape, cls._original_image.shape))
         cls._insert_text(
-            x_coord=3.9, 
+            x_coord=-1.0, 
             y_coord=0.25, 
-            text_line="[3] Masked 3d printed object with defects, size {}." \
-                .format(cls._original_image.shape))
+            text_line=(
+                "[Middle] Masked 3d printed object, size: {} (height, width, "
+                "channels) pixels."
+            ).format(cls._original_image.shape, cls._original_image.shape))
+        cls._insert_text(
+            x_coord=-1.0, 
+            y_coord=0.25, 
+            text_line=(
+                "[Right] Masked 3d printed object with defects, size {} "
+                "(height, width, channels) pixels."
+            ).format(cls._original_image.shape))
         
     @classmethod
     def _insert_areas_calculations_data(cls) -> None:
@@ -448,31 +485,32 @@ class Load(object):
         cls._insert_text(
             x_coord=0.5, 
             y_coord=0.5, 
-            font_type="Times-Bold", 
+            font_type="Arial-Bold", 
             text_line="· Structural similarity index measure max score:")
         cls._insert_text(
             x_coord=0.5, 
             y_coord=0.25,
-            text_line="{} %".format(cls._ssim_max_score_reference_object))
+            text_line="{:.3E} %".format(
+                Decimal(cls._ssim_max_score_reference_object)))
         
         # Perfect model and internal areas
         cls._report.drawImage(
             image=cls._image_paths[4], 
             x=cls._report_width*0.27, 
-            y=cls._report_height*0.18, 
+            y=cls._report_height*0.17, 
             width=9.5*cm, 
-            height=13.0*cm)
+            height=10.0*cm)
         
         # Internal areas calculations
         cls._insert_text(
             x_coord=-0.5, 
-            y_coord=15.0, 
-            font_type="Times-Bold", 
+            y_coord=12.0, 
+            font_type="Arial-Bold", 
             text_line="· List of areas (mm2):")
         cls._textobject.moveCursor(0.5*cm, 0.0)
         init_list_coords = [
             cls._textobject.getX(), cls._textobject.getY()]
-        offset = 2.5*cm
+        offset = 2.6*cm
         for (i, area) in cls._infill_areas:
             if ((cls._textobject.getY() >= cls._report_height-(2*cm))
                 and not (cls._textobject.getX() >= cls._report_width-(6*cm))):
@@ -484,19 +522,19 @@ class Load(object):
                     cls._textobject.getX(), cls._textobject.getY()]
                 cls._insert_text(
                     y_coord=0.25,  
-                    text_line="[{}] {}".format(i, area))
+                    text_line="[{}] {}".format(i, round(area, 4)))
             elif ((cls._textobject.getY() >= cls._report_height-(2*cm)) 
                   and (cls._textobject.getX() >= cls._report_width-(6*cm))):
                 cls._draw_text_and_reset_page(True)
                 init_list_coords = (3*cm, 1.75*cm)
                 cls._insert_text(
                     x_coord=3.0, 
-                    y_coord=2.0,  
-                    text_line="[{}] {}".format(i, area))
+                    y_coord=2.0, 
+                    text_line="[{}] {}".format(i, round(area, 4)))
             else:
                 cls._insert_text(
-                    y_coord=0.25,  
-                    text_line="[{}] {}".format(i, area))
+                    y_coord=0.25, 
+                    text_line="[{}] {}".format(i, round(area, 4)))
     
     @classmethod
     def _insert_text(
@@ -504,7 +542,7 @@ class Load(object):
             x_coord: float = 0.0, 
             y_coord: float = 0.0, 
             units: float=cm, 
-            font_type: str="Times-Roman", 
+            font_type: str="Arial", 
             font_size: str=11, 
             color: Color=colors.black, 
             alpha: float=1.0, 
@@ -521,7 +559,7 @@ class Load(object):
                 Type of unit to multiple to the coordinates in order to 
                 transform them into points. Defaults to cm.
             font_type (str, optional): 
-                Type of font of the text. Defaults to "Times-Roman".
+                Type of font of the text. Defaults to "Arial".
             font_size (str, optional): 
                 Size of the text. Defaults to 11.
             color (Color, optional): 

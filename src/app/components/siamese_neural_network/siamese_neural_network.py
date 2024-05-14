@@ -1,10 +1,11 @@
+import os
 import cv2
 import imutils
 import numpy as np
 from imutils import build_montages
 from keras.api.models import Model
 from keras.api.layers import (
-    Input, Conv2D, Dense, Dropout, GlobalAveragePooling2D, MaxPooling2D, BatchNormalization, Activation)
+    Input, Conv2D, Dense, Dropout, GlobalAveragePooling2D, MaxPooling2D, Lambda)
 import tf_keras.api._v2.keras.backend as K
 import matplotlib.pyplot as plt
 
@@ -12,7 +13,78 @@ class SiameseNeuralNetwork(object):
     
     @classmethod
     def classificate_defect(cls):
-        pass
+        train_images = []
+        for i in range(0, 150):
+            
+            image = cv2.imread("{}{}{}.jpg".format(
+                os.path.dirname(os.getcwd()), 
+                "/data/classification/images/", 
+                i))
+            image = imutils.resize(image, width=120)
+            train_images.append(image)
+        print(train_images[0].shape)
+        train_images = np.array(train_images)
+        cv2.imshow("train image", train_images[0])
+        cv2.waitKey(0)
+        cv2.destroyAllWindows()
+        labels = []
+        labels_file = open("{}{}".format(
+                os.path.dirname(os.getcwd()), 
+                "/data/classification/labels/labels.txt"), "r")
+        for line in labels_file.readlines():
+            line = line.strip().replace("\n", "")
+            labels.append(line)
+        labels = np.array(labels)
+        labels = labels.astype(np.uint8)
+        
+        train_images = train_images / 255.0
+        
+        print("[INFO] preparing positive and negative pairs...")
+        (pairTrain, labelTrain) = SiameseNeuralNetwork.make_pairs(
+            train_images, labels)
+        print(len(pairTrain))
+        
+        # specify the shape of the inputs for our network
+        IMG_SHAPE = (159, 120, 3)
+        # specify the batch size and number of epochs
+        BATCH_SIZE = 64
+        EPOCHS = 5
+        
+        # configure the siamese network
+        print("[INFO] building siamese network...")
+        imgA = Input(shape=IMG_SHAPE)
+        imgB = Input(shape=IMG_SHAPE)
+        featureExtractor = cls._build_siamese_architecture(
+            IMG_SHAPE)
+        featsA = featureExtractor(imgA)
+        featsB = featureExtractor(imgB)
+        
+        # finally, construct the siamese network
+        distance = Lambda(cls._euclidean_distance, output_shape=(None, 1))([featsA, featsB])
+        outputs = Dense(1, activation="sigmoid")(distance)
+        model = Model(inputs=[imgA, imgB], outputs=outputs)
+        
+        # compile the model
+        print("[INFO] compiling model...")
+        model.compile(loss="binary_crossentropy", optimizer="adam",
+            metrics=["accuracy"])
+        model.summary()
+        # train the model
+        print("[INFO] training model...")
+        history = model.fit(
+            [pairTrain[:, 0], pairTrain[:, 1]], labelTrain[:],
+            batch_size=BATCH_SIZE, 
+            epochs=EPOCHS)
+        
+        MODEL_PATH = "{}/data/classification/output/siamese_model.h5".format(os.path.dirname(os.getcwd()))
+        PLOT_PATH = "{}/data/classification/output/siamese_model_plot.png".format(os.path.dirname(os.getcwd()))
+        
+        # serialize the model to disk
+        print("[INFO] saving siamese model...")
+        model.save(MODEL_PATH)
+        # plot the training history
+        print("[INFO] plotting training history...")
+        cls._plot_training(history, PLOT_PATH)
     
     @classmethod
     def make_pairs(cls, images, labels):

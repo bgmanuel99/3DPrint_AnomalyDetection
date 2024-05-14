@@ -2,9 +2,10 @@ import cv2
 import math
 import numpy as np
 from typing import List
-from imutils import contours
+from imutils import contours, perspective
 
 from app.common.common_prints import CommonPrints
+from app.common.common_functionalities import CommonFunctionalities
 
 class AreaCalculation(object):
     """Class containing methods to calculate internal areas of the 3d printed
@@ -70,7 +71,7 @@ class AreaCalculation(object):
         """
 
         cnts = cls._find_and_sort_contours(perfect_model_3d_object)
-
+        
         infill_contours_image = cls._draw_and_enumerate_contours(
             original_image_shape, cnts)
         
@@ -106,7 +107,7 @@ class AreaCalculation(object):
             perfect_model_3d_object, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
 
         # Sort contours from max to min by area
-        cnts = sorted(cnts, key=cv2.contourArea, reverse=True)[1:]
+        cnts = sorted(cnts, key=cv2.contourArea, reverse=True)
 
         # Sort contours from left to right and top to bottom
         cnts, _ = contours.sort_contours(cnts, method="left-to-right")
@@ -137,10 +138,18 @@ class AreaCalculation(object):
                 Image with the internal contours drawn and enumerated
         """
         
+        box = CommonFunctionalities.get_box_coordinates(cnts[0])
+        (top_left, top_right, bottom_right, bottom_left) = perspective \
+            .order_points(box)
+                
+        (top_left, top_right, bottom_right, bottom_left) = tuple(map(
+            lambda sublist: tuple(map(int, sublist)), 
+            (top_left, top_right, bottom_right, bottom_left)))
+        
         infill_contours = np.zeros(
             original_image_shape, dtype=np.uint8)
 
-        for (i, c) in enumerate(cnts):
+        for (i, c) in enumerate(cnts[1:]):
             M = cv2.moments(c)
             center_x = int(M["m10"] / M["m00"])
             center_y = int(M["m01"] / M["m00"])
@@ -155,7 +164,13 @@ class AreaCalculation(object):
                 (0, 0, 255), 
                 1)
             
-        return infill_contours
+        cropped_infill_contours = infill_contours[
+            max(top_left[1], top_right[1]):
+                max(bottom_right[1], bottom_left[1]), 
+            max(top_left[0], bottom_left[0]):
+                max(top_right[0], bottom_right[0])]
+            
+        return cropped_infill_contours
     
     @classmethod
     def _retrieve_contours_pixels_areas(
@@ -175,7 +190,7 @@ class AreaCalculation(object):
         
         infill_pixels_areas = []
 
-        for (i, c) in enumerate(cnts):
+        for (i, c) in enumerate(cnts[1:]):
             infill_pixels_areas.append([i+1, cv2.contourArea(c)])
             
         return infill_pixels_areas
@@ -210,9 +225,8 @@ class AreaCalculation(object):
         for i, infill_pixels_area in infill_pixels_areas:
             infill_areas.append([
                 i, 
-                round(infill_pixels_area 
-                      * reference_object_area 
-                      / reference_object_pixels_area, 
-                      4)])
+                infill_pixels_area 
+                * reference_object_area 
+                / reference_object_pixels_area])
             
         return infill_areas
