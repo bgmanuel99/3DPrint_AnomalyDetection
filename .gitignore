@@ -160,5 +160,7 @@ cython_debug/
 #.idea/
 
 .vscode/
-src/data/classification/images/*.jpg
-src/data/classification/labels/
+src/data/classification/trainX/*.jpg
+src/data/classification/trainY/
+src/data/classification/testX/*.jpg
+src/data/classification/testY/

@@ -1,6 +1,7 @@
 import os
 import io
 import cv2
+import imutils
 import numpy as np
 
 from app.utils.exceptions.extract_exceptions import *
@@ -99,6 +100,56 @@ class Extract(object):
             inputs_father_directory_path, 
             input_metadata_directory, 
             metadata_name)
+        
+        # trainX = []
+        # for image_name in sorted([
+        #     int(name.split(".")[0]) for name in os.listdir(
+        #     os.path.dirname(os.getcwd()) + "/data/classification/trainX/")]):
+        #     image = cv2.imread(
+        #         "{}{}{}.jpg".format(
+        #             os.path.dirname(os.getcwd()), 
+        #             "/data/classification/trainX/", 
+        #             image_name))
+        #     image = imutils.resize(image, width=120)
+        #     trainX.append(image)
+        # trainX = np.array(trainX)
+        
+        # trainY = []
+        # trainY_file = open(
+        #     "{}{}".format(
+        #         os.path.dirname(os.getcwd()), 
+        #         "/data/classification/trainY/trainY.txt"), 
+        #     "r")
+        # for label in trainY_file.readlines():
+        #     label = label.strip().replace("\n", "")
+        #     trainY.append(label)
+        # trainY = np.array(trainY)
+        # trainY = trainY.astype(np.uint8)
+        
+        # testX = []
+        # for image_name in sorted([
+        #     int(name.split(".")[0]) for name in os.listdir(
+        #     os.path.dirname(os.getcwd()) + "/data/classification/testX/")]):
+        #     image = cv2.imread(
+        #         "{}{}{}.jpg".format(
+        #             os.path.dirname(os.getcwd()), 
+        #             "/data/classification/testX/", 
+        #             image_name))
+        #     image = imutils.resize(image, width=120)
+        #     testX.append(image)
+        # testX = np.array(testX)
+        
+        # testY = []
+        # testY_file = open(
+        #     "{}{}".format(
+        #         os.path.dirname(os.getcwd()), 
+        #         "/data/classification/testY/testY.txt"), 
+        #     "r")
+        # for label in testY_file.readlines():
+        #     label = label.strip().replace("\n", "")
+        #     testY.append(label)
+        # testY = np.array(testY)
+        # testY = testY.astype(np.uint8)
         
         # Check if directories exists
         cls._check_directories()
