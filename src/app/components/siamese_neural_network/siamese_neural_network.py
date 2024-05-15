@@ -20,7 +20,12 @@ from app.utils.constants.constants import *
 class SiameseNeuralNetwork(object):
     
     @classmethod
-    def classificate_defect(cls, trainX, trainY, testX, testY):
+    def construct_and_train_siamese_neural_network(
+            cls, 
+            trainX: np.ndarray, 
+            trainY: np.ndarray, 
+            testX: np.ndarray, 
+            testY: np.ndarray):
         (trainX, testX) = cls._normalize_data(trainX, testX)
         
         print("[INFO] Preparing positive and negative pairs...")
@@ -35,11 +40,9 @@ class SiameseNeuralNetwork(object):
         
         model = cls._compile_model(model, True)
         
-        history = cls._train_and_save_model(
+        model, history = cls._train_model(
             model, pair_train, label_train, pair_test, label_test)
         
-        # Plot the training history
-        print("[INFO] Plotting training history...")
         cls._plot_training(history)
         
     @classmethod
@@ -174,7 +177,7 @@ class SiameseNeuralNetwork(object):
         return model
     
     @classmethod
-    def _train_and_save_model(
+    def _train_model(
             cls, 
             model: Model, 
             pair_train: np.ndarray, 
@@ -192,12 +195,16 @@ class SiameseNeuralNetwork(object):
         
         # Serialize the model to disk
         print("[INFO] Saving siamese model...")
-        model.save(MODEL_PATH)
+        model.save(os.path.dirname(os.getcwd()) 
+                   + MODEL_PATH 
+                   + MODEL_NAME)
         
-        return history
+        return model, history
     
     @classmethod
     def _plot_training(cls, history) -> None:
+        # Plot the training history
+        print("[INFO] Plotting training history...")
         plt.style.use("ggplot")
         plt.figure()
         plt.plot(history.history["loss"], label="train_loss")
@@ -206,7 +213,9 @@ class SiameseNeuralNetwork(object):
         plt.xlabel("Epoch")
         plt.ylabel("Accuracy")
         plt.legend(loc="lower left")
-        plt.savefig(PLOT_PATH)
+        plt.savefig(os.path.dirname(os.getcwd()) 
+                    + PLOT_PATH 
+                    + PLOT_NAME)
         
     @classmethod
     def _build_montage(

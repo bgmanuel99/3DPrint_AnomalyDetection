@@ -12,6 +12,7 @@ if __name__ == "__main__":
     metadata_name = None
     reference_object_width = None
     train_neural_network = None
+    pretrained_model_name = None
     
     for arg in sys.argv:
         input_app = input_app + " " + arg
@@ -33,14 +34,18 @@ if __name__ == "__main__":
                 case "reference_object_width":
                     reference_object_width = float(input_name)
                 case "train_neural_network":
-                    if input_name == "true":
+                    if input_name == "True":
                         train_neural_network = True
-                    else:
+                    elif input_name == "False":
                         train_neural_network = False
-    except ValueError as e:
-        print(("InputPrefixException: You forgot to introduce a prefix or a "
-               "value or introduced to many, review your input command."))
-        exit()
+                    else:
+                        raise InputTrainNeuralNetworkInvalidDataException()
+                case "pretrained_model_name":
+                    pretrained_model_name = input_name
+    except (
+        ValueError, 
+        InputTrainNeuralNetworkInvalidDataException) as e:
+        CommonPrints.system_out(e)
     
     try:
         if not execution_type:
@@ -55,13 +60,21 @@ if __name__ == "__main__":
         elif not reference_object_width:
             reference_object_width = 18.74
             raise InputReferenceObjectWidthNotSpecifiedException()
+        elif ((not train_neural_network 
+              or train_neural_network == False) 
+              and not pretrained_model_name):
+            raise NeedOfNeuralNetworkModelException()
+        elif train_neural_network == True and pretrained_model_name:
+            raise TrainNeuralNetworkModelWithSpecifiedNameException()
         elif not train_neural_network:
             train_neural_network = False
             raise InputTrainNeuralNetworkNotSpecifiedException()
     except (
         InputExecutionTypeNotSpecifiedException, 
         InputImageNameNotSpecifiedException, 
-        InputGcodeNameNotSpecifiedException) as e:
+        InputGcodeNameNotSpecifiedException, 
+        NeedOfNeuralNetworkModelException, 
+        TrainNeuralNetworkModelWithSpecifiedNameException) as e:
         CommonPrints.system_out(e)
     except (
         InputMetadataNameNotSpecifiedException, 
@@ -76,4 +89,5 @@ if __name__ == "__main__":
                 image_name=image_name, 
                 metadata_name=metadata_name, 
                 reference_object_width=reference_object_width, 
-                train_neural_network=train_neural_network)
+                train_neural_network=train_neural_network, 
+                pretrained_model_name=pretrained_model_name)

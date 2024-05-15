@@ -4,8 +4,10 @@ import cv2
 import imutils
 import numpy as np
 
+from keras.api.models import Model, load_model
 from app.utils.constants.constants import *
 from app.common.common_prints import CommonPrints
+from app.utils.exceptions.extract_exceptions.model_exceptions import *
 from app.utils.exceptions.extract_exceptions.input_image_exceptions import *
 from app.utils.exceptions.extract_exceptions.input_gcode_exceptions import *
 from app.utils.exceptions.extract_exceptions.test_images_exceptions import *
@@ -22,9 +24,17 @@ class Extract(object):
                 gcode_name: str, 
                 image_name: str, 
                 metadata_name: str, 
-                train_neural_network: bool): 
+                train_neural_network: bool, 
+                pretrained_model_name: str): 
             Method to extract process data.
-        _check_directories: 
+        _check_models_directory ():
+            Private method to check if the models input directory exists
+        _check_models_data (
+                model_path: str, 
+                pretrained_model_name: str):
+            Private method to check if the pretrained model exists and is a 
+            file
+        _check_directories (): 
             Private method to check if the directories of the input files
             exists.
         _check_input_data (
@@ -57,8 +67,19 @@ class Extract(object):
                 labels_path: str):
             Private method to extract and make last checks over the train and 
             testing classification labels data for the siamese neural network
+        _extract_pretrained_model (model_path: str):
+            Private method to extract the pretrained model
             
     Raises:
+        ModelOutputDirectoryNotFound: 
+            Raised when the siamese neural network models input directory 
+            is not found
+        ModelNotFileException: 
+            Raised when the user didn't specified the siamese neural 
+            network to betrained and there is no model to be extracted
+        ModelNotFoundException: 
+            Raised when the user specified a model name which is not a 
+            valid file
         InputGCodeDirectoryNotFoundException: 
             Raised when the gcode input directory is not found
         InputImageDirectoryNotFoundException: 
@@ -141,7 +162,8 @@ class Extract(object):
             gcode_name: str, 
             image_name: str, 
             metadata_name: str, 
-            train_neural_network: bool) -> (
+            train_neural_network: bool, 
+            pretrained_model_name: str) -> (
                 tuple[
                     io.TextIOWrapper, 
                     np.ndarray, 
@@ -149,7 +171,8 @@ class Extract(object):
                     np.ndarray, 
                     np.ndarray, 
                     np.ndarray, 
-                    np.ndarray] 
+                    np.ndarray, 
+                    None] 
                 | tuple[
                     io.TextIOWrapper, 
                     np.ndarray, 
@@ -157,7 +180,8 @@ class Extract(object):
                     np.ndarray, 
                     np.ndarray, 
                     np.ndarray, 
-                    np.ndarray]
+                    np.ndarray, 
+                    None]
                 | tuple[
                     io.TextIOWrapper, 
                     np.ndarray, 
@@ -165,7 +189,8 @@ class Extract(object):
                     None, 
                     None, 
                     None, 
-                    None]
+                    None, 
+                    Model]
                 | tuple[
                     io.TextIOWrapper, 
                     np.ndarray, 
@@ -173,7 +198,8 @@ class Extract(object):
                     None, 
                     None, 
                     None, 
-                    None]):
+                    None, 
+                    Model]):
         """Method to extract process data.
 
         Parameters:
@@ -183,6 +209,8 @@ class Extract(object):
             train_neural_network (bool): 
                 Boolean to acknowledge if the saimese neural network has to be 
                 trained and to know if the data has to be extracted
+            pretrained_model_name (str):
+                Name of the pretrained neural network model
 
         Returns:
             (
@@ -193,7 +221,8 @@ class Extract(object):
                     np.ndarray, 
                     np.ndarray, 
                     np.ndarray, 
-                    np.ndarray] 
+                    np.ndarray, 
+                    None] 
                 | tuple[
                     io.TextIOWrapper, 
                     np.ndarray, 
@@ -201,7 +230,8 @@ class Extract(object):
                     np.ndarray, 
                     np.ndarray, 
                     np.ndarray, 
-                    np.ndarray]
+                    np.ndarray, 
+                    None]
                 | tuple[
                     io.TextIOWrapper, 
                     np.ndarray, 
@@ -209,7 +239,8 @@ class Extract(object):
                     None, 
                     None, 
                     None, 
-                    None]
+                    None, 
+                    Model]
                 | tuple[
                     io.TextIOWrapper, 
                     np.ndarray, 
@@ -217,11 +248,15 @@ class Extract(object):
                     None, 
                     None, 
                     None, 
-                    None]
+                    None, 
+                    Model]
             ):
-                Gcode file, image, metadata file and trainX, trainY, testX and 
-                testY siamese neural network data. Metadata file and nerual 
-                network data are optional to be extracted.
+                Gcode file, image, metadata file, trainX, trainY, testX,  
+                testY and model siamese neural network data. Metadata file and 
+                nerual network data are optional to be extracted. If the model 
+                is to trained during the execution this method will return the 
+                training data if not it will return a pretrained model 
+                specified by the user
         """
         
         gcode_path: str = "{}{}{}{}".format(
@@ -242,24 +277,36 @@ class Extract(object):
             INPUT_METADATA_DIRECTORY, 
             metadata_name)
         
+        model_path: str = "{}{}{}{}".format(
+            os.path.dirname(os.getcwd()), 
+            MODEL_PATH, 
+            pretrained_model_name)
+        
+        if not train_neural_network:
+            cls._check_models_directory()
+            
+            cls._check_models_data(model_path, pretrained_model_name)
+            
+            model = cls._extract_pretrained_model(model_path)
+        
         if train_neural_network:
             trainX_path = (os.path.dirname(os.getcwd()) 
-                        + FATHER_CLASSIFICATION_DIRECTORY_PATH 
-                        + TRAIN_IMAGES_DIRECTORY)
+                           + FATHER_CLASSIFICATION_DIRECTORY_PATH 
+                           + TRAIN_IMAGES_DIRECTORY)
             
             trainY_path = (os.path.dirname(os.getcwd()) 
-                        + FATHER_CLASSIFICATION_DIRECTORY_PATH 
-                        + TRAIN_LABELS_DIRECTORY
-                        + TRAIN_LABELS_FILE_NAME)
+                           + FATHER_CLASSIFICATION_DIRECTORY_PATH 
+                           + TRAIN_LABELS_DIRECTORY
+                           + TRAIN_LABELS_FILE_NAME)
             
             testX_path = (os.path.dirname(os.getcwd()) 
-                        + FATHER_CLASSIFICATION_DIRECTORY_PATH 
-                        + TEST_IMAGES_DIRECTORY)
+                          + FATHER_CLASSIFICATION_DIRECTORY_PATH 
+                          + TEST_IMAGES_DIRECTORY)
             
             testY_path = (os.path.dirname(os.getcwd()) 
-                        + FATHER_CLASSIFICATION_DIRECTORY_PATH 
-                        + TEST_LABELS_DIRECTORY
-                        + TEST_LABELS_FILE_NAME)
+                          + FATHER_CLASSIFICATION_DIRECTORY_PATH 
+                          + TEST_LABELS_DIRECTORY
+                          + TEST_LABELS_FILE_NAME)
         
         # Check if directories exists
         cls._check_directories()
@@ -312,7 +359,8 @@ class Extract(object):
                 trainX, 
                 trainY, 
                 testX, 
-                testY)
+                testY, 
+                None)
         else:
             return (
                 gcode_file, 
@@ -321,7 +369,60 @@ class Extract(object):
                 None, 
                 None, 
                 None, 
-                None)
+                None, 
+                model)
+            
+    @classmethod
+    def _check_models_directory(cls) -> None:
+        """Method to check if the models input directory exists
+
+        Raises:
+            ModelOutputDirectoryNotFound: 
+                Raised when the siamese neural network models input directory 
+                is not found
+        """
+        
+        try:
+            if not os.path.exists(
+                os.path.dirname(os.getcwd()) 
+                + MODEL_PATH):
+                    raise ModelOutputDirectoryNotFound()
+        except ModelOutputDirectoryNotFound as e:
+            print(e)
+            os.mkdir(
+                os.path.dirname(os.getcwd()) 
+                + MODEL_PATH)
+            
+    @classmethod
+    def _check_models_data(
+            cls, 
+            model_path: str, 
+            pretrained_model_name: str) -> None:
+        """Method to check if the pretrained model exists and is a file
+
+        Parameters:
+            model_path (str): Path to the pretrained model
+            pretrained_model_name (str): Name of the pretrained model
+
+        Raises:
+            ModelNotFileException: 
+                Raised when the user didn't specified the siamese neural 
+                network to betrained and there is no model to be extracted
+            ModelNotFoundException: 
+                Raised when the user specified a model name which is not a 
+                valid file
+        """
+        
+        try:
+            if os.path.exists(model_path):
+                if not os.path.isfile(model_path):
+                    raise ModelNotFileException(pretrained_model_name)
+            else:
+                raise ModelNotFoundException(pretrained_model_name)
+        except (
+            ModelNotFileException, 
+            ModelNotFoundException) as e:
+            CommonPrints.system_out(e)
             
     @classmethod
     def _check_directories(cls):
@@ -793,3 +894,16 @@ class Extract(object):
             TrainLabelsIncorrectMatchTrainImagesException, 
             TestLabelsIncorrectMatchTestImagesException) as e:
             CommonPrints.system_out(e)
+            
+    @classmethod
+    def _extract_pretrained_model(cls, model_path: str) -> Model:
+        """Method to extract the pretrained model
+
+        Parameters:
+            model_path (str): Path to the pretrained model
+
+        Returns:
+            Model: Pretrained model
+        """
+        
+        return load_model(model_path)

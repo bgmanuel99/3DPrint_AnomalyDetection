@@ -121,5 +121,77 @@ class InputTrainNeuralNetworkNotSpecifiedException(Exception):
     def __str__(self) -> str:
         return (
             "InputTrainNeuralNetworkNotSpecifiedException: {}. "
-            "The neural network won't be trained during the execution."
+            "The neural network won't be trained during the execution, "
+            "using a pretrained neural network instead."
+        ).format(self.message)
+        
+class InputTrainNeuralNetworkInvalidDataException(Exception):
+    """Raised when the user introduce an invalid data type for the train 
+    neural network prefix in the inital command
+
+    Parameters:
+        message (str): Explanation message of the error
+    """
+    
+    def __init__(
+            self, 
+            message=(
+                "You specified a wrong type for the "
+                "train_neural_network prefix")) -> None:
+        self.message = message
+        
+        super().__init__(self.message)
+        
+    def __str__(self) -> str:
+        return (
+            "InputTrainNeuralNetworkInvalidDataException: {}. "
+            "It should be either True or False"
+        ).format(self.message)
+        
+class NeedOfNeuralNetworkModelException(Exception):
+    """Raised when the user don't introduce the train neural network boolean 
+    to acknowledge if the neural network should be train or not and don't 
+    specify a pretrained neural network model name to be extracted.
+
+    Parameters:
+        message (str): Explanation message of the error
+    """
+    
+    def __init__(
+            self, 
+            message=(
+                "You didn't specified a neural network name.")) -> None:
+        self.message = message
+        
+        super().__init__(self.message)
+        
+    def __str__(self) -> str:
+        return (
+            "NeedOfNeuralNetworkModelException: {}. Introduce the name of "
+            "the model in the initial command as --neural_network_name name"
+            ".h5 and the model itself to the ../app/data/classification/"
+            "models/ directory"
+        ).format(self.message)
+        
+class TrainNeuralNetworkModelWithSpecifiedNameException(Exception):
+    """Raised when the user want's to train the network during the execution 
+    but also inserted the name of a pretrained saved model
+
+    Parameters:
+        message (str): Explanation message of the error
+    """
+    
+    def __init__(
+            self, 
+            message=(
+                "You specified to the execution to train the siamese neural "
+                "network while also passing a pretrained model name")) -> None:
+        self.message = message
+        
+        super().__init__(self.message)
+        
+    def __str__(self) -> str:
+        return (
+            "TrainNeuralNetworkModelWithSpecifiedNameException: {}. Specify "
+            "which of them you want the execution to do."
         ).format(self.message)

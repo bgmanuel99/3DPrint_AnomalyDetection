@@ -20,6 +20,15 @@ TEST_IMAGES_DIRECTORY: str = "testX/"
 TEST_LABELS_DIRECTORY: str = "testY/"
 TEST_LABELS_FILE_NAME: str = "testY.txt"
 
+# ******************* Siamese neural network *******************
+IMAGE_SHAPE: tuple[int] = (159, 120, 3)
+BATCH_SIZE: float = 64
+EPOCHS: int = 5
+MODEL_PATH: str = "/data/classification/models/"
+MODEL_NAME: str = "siamese_neural_network_model.h5"
+PLOT_PATH: str = "/data/classification/output/"
+PLOT_NAME: str = "siamese_model_plot.png"
+
 # ******************* Low contrast detection *******************
 FRACTION_THRESHOLD: float = 0.35
 
@@ -28,9 +37,9 @@ GCODE_COMMENT_SYMBOL: str = ";"
 GCODE_EXTRUSION_SYMBOL: str = "E"
 # TODO: The feed rate could change, the only constant should be the F
 GCODE_FEED_RATE_SYMBOL: str = "F9000" # Traveling extruder speed
-GCODE_POSITION_SYMBOLS: tuple[str, ...] = [
+GCODE_POSITION_SYMBOLS: tuple[str, str, str, str] = [
     "G1", "X", "Y", GCODE_EXTRUSION_SYMBOL]
-GCODE_INITIAL_POSITION_SYMBOLS: tuple[str, ...] = ["G1", "X", "Y"]
+GCODE_INITIAL_POSITION_SYMBOLS: tuple[str, str, str] = ["G1", "X", "Y"]
 WIPE_START_COMMENT: str = ";WIPE_START"
 WIPE_END_COMMENT: str = ";WIPE_END"
 RETRACT_LENGTH_COMMENT: str = "; retract_length ="
@@ -43,15 +52,6 @@ Z_VALUE_COMMENT: str = ";Z:"
 HEIGHT_VALUE_COMMENT: str = ";HEIGHT:"
 INPUT_STRAND: float = 2.404
 LAYER_HEIGHT: float = 0.25
-
-# ******************* Siamese neural network *******************
-IMAGE_SHAPE: tuple[int] = (159, 120, 3)
-BATCH_SIZE: float = 64
-EPOCHS: int = 5
-MODEL_PATH: str = (os.path.dirname(os.getcwd()) 
-                   + "/data/classification/output/siamese_model.h5")
-PLOT_PATH: str = (os.path.dirname(os.getcwd()) 
-                  + "/data/classification/output/siamese_model_plot.png")
 
 # ******************* Load data *******************
 OUTPUT_DIRECTORY_PATH: str = "/data/output/"

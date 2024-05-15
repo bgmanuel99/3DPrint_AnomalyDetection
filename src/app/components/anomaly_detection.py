@@ -26,10 +26,21 @@ class AnomalyDetection(object):
                 image_name: str, 
                 metadata_name: str, 
                 reference_object_width: float, 
-                train_neural_network: bool):
-            Main algorithm to detect 3d printing anomalies in images.
+                train_neural_network: bool, 
+                pretrained_model_name: str):
+            Main algorithm to detect and classify 3d printing anomalies in 
+            images.
 
     Raises:
+        ModelOutputDirectoryNotFound: 
+            Raised when the siamese neural network models input directory 
+            is not found
+        ModelNotFileException: 
+            Raised when the user didn't specified the siamese neural 
+            network to betrained and there is no model to be extracted
+        ModelNotFoundException: 
+            Raised when the user specified a model name which is not a 
+            valid file
         InputGCodeDirectoryNotFoundException: 
             Raised when the gcode input directory is not found
         InputImageDirectoryNotFoundException: 
@@ -118,7 +129,8 @@ class AnomalyDetection(object):
             image_name: str, 
             metadata_name: str, 
             reference_object_width: float, 
-            train_neural_network: bool) -> None:
+            train_neural_network: bool, 
+            pretrained_model_name: str) -> None:
         """Main algorithm to detect 3d printing anomalies in images.
 
         Parameters:
@@ -130,6 +142,7 @@ class AnomalyDetection(object):
             train_neural_network: 
                 Boolean to acknowledge whether to train or not the siamese 
                 neural network
+            pretrained_model_name: Name of the pretrained neural network model
         """
 
         # Extract data
@@ -139,8 +152,18 @@ class AnomalyDetection(object):
          trainX, 
          trainY, 
          testX, 
-         testY) = Extract.extract_process_data(
-            gcode_name, image_name, metadata_name, train_neural_network)
+         testY, 
+         model) = Extract.extract_process_data(
+            gcode_name, 
+            image_name, 
+            metadata_name, 
+            train_neural_network, 
+            pretrained_model_name)
+         
+        if train_neural_network:
+            (model, plot) = SiameseNeuralNetwork \
+                .construct_and_train_siamese_neural_network(
+                    trainX, trainY, testX, testY)
 
         # Detect low contrast images
         LowContrastDetection.low_contrast_dectection(image)
