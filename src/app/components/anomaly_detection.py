@@ -25,7 +25,8 @@ class AnomalyDetection(object):
                 gcode_name: str, 
                 image_name: str, 
                 metadata_name: str, 
-                reference_object_width: float):
+                reference_object_width: float, 
+                train_neural_network: bool):
             Main algorithm to detect 3d printing anomalies in images.
 
     Raises:
@@ -68,7 +69,8 @@ class AnomalyDetection(object):
             gcode_name: str, 
             image_name: str, 
             metadata_name: str, 
-            reference_object_width: float) -> None:
+            reference_object_width: float, 
+            train_neural_network: bool) -> None:
         """Main algorithm to detect 3d printing anomalies in images.
 
         Parameters:
@@ -77,6 +79,9 @@ class AnomalyDetection(object):
             metadata_name (str): Metadata name for report
             reference_object_width (float): 
                 Known real width of the reference object
+            train_neural_network: 
+                Boolean to acknowledge whether to train or not the siamese 
+                neural network
         """
 
         # Extract data

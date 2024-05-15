@@ -2,8 +2,9 @@ import cv2
 import numpy
 from skimage.exposure import is_low_contrast
 
-from app.utils.exceptions.low_contrast_exceptions import *
+from app.utils.constants.constants import *
 from app.common.common_prints import CommonPrints
+from app.utils.exceptions.low_contrast_exceptions import *
 
 # TODO: Search for histogram equalization to enhance image contrast if it is 
 # too low
@@ -36,7 +37,7 @@ class LowContrastDetection(object):
         try:
             image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
             
-            if is_low_contrast(image): 
+            if is_low_contrast(image, fraction_threshold=FRACTION_THRESHOLD): 
                 raise LowContrastDetectionException()
         except LowContrastDetectionException as e:
             CommonPrints.system_out(e)

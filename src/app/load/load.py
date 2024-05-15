@@ -237,10 +237,10 @@ class Load(object):
         cls._report = Canvas(
             "{}{}{}_{}.{}".format(
                 os.path.dirname(os.getcwd()), 
-                output_directory_path, 
+                OUTPUT_DIRECTORY_PATH, 
                 image_name.split(".")[0], 
                 gcode_name.split(".")[0], 
-                output_report_extension), 
+                OUTPUT_REPORT_EXTENSION), 
             pagesize=A4, 
             bottomup=0)
         
@@ -613,9 +613,9 @@ class Load(object):
         for (image_name, image) in zip(*images):
             image_path = "{}{}{}.{}".format(
                 os.path.dirname(os.getcwd()), 
-                output_directory_path, 
+                OUTPUT_DIRECTORY_PATH, 
                 image_name, 
-                output_image_file_extension)
+                OUTPUT_IMAGE_FILE_EXTENSION)
             
             cv2.imwrite(image_path, image)
             
@@ -644,7 +644,7 @@ class Load(object):
         try:
             if not os.path.exists(
                 os.path.dirname(os.getcwd()) 
-                + output_directory_path): 
+                + OUTPUT_DIRECTORY_PATH): 
                     raise OutputImageDirectoryNotFound()
         except OutputImageDirectoryNotFound as e:
             CommonPrints.system_out(e)

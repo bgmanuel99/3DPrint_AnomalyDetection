@@ -4,9 +4,11 @@ import cv2
 import imutils
 import numpy as np
 
-from app.utils.exceptions.extract_exceptions import *
-from app.common.common_prints import CommonPrints
 from app.utils.constants.constants import *
+from app.common.common_prints import CommonPrints
+from app.utils.exceptions.extract_exceptions.input_image_exceptions import *
+from app.utils.exceptions.extract_exceptions.input_gcode_exceptions import *
+from app.utils.exceptions.extract_exceptions.input_metadata_exceptions import *
 
 class Extract(object):
     """Class for the process data extraction.
@@ -85,20 +87,20 @@ class Extract(object):
         
         gcode_path = "{}{}{}{}".format(
             os.path.dirname(os.getcwd()), 
-            inputs_father_directory_path, 
-            input_gcode_directory, 
+            INPUTS_FATHER_DIRECTORY_PATH, 
+            INPUT_GCODE_DIRECTORY, 
             gcode_name)
         
         image_path = "{}{}{}{}".format(
             os.path.dirname(os.getcwd()), 
-            inputs_father_directory_path, 
-            input_image_directory, 
+            INPUTS_FATHER_DIRECTORY_PATH, 
+            INPUT_IMAGE_DIRECTORY, 
             image_name)
         
         metadata_path = "{}{}{}{}".format(
             os.path.dirname(os.getcwd()), 
-            inputs_father_directory_path, 
-            input_metadata_directory, 
+            INPUTS_FATHER_DIRECTORY_PATH, 
+            INPUT_METADATA_DIRECTORY, 
             metadata_name)
         
         # trainX = []
@@ -191,37 +193,37 @@ class Extract(object):
         try:
             if not os.path.exists(
                 os.path.dirname(os.getcwd()) 
-                + inputs_father_directory_path
-                + input_gcode_directory): 
+                + INPUTS_FATHER_DIRECTORY_PATH
+                + INPUT_GCODE_DIRECTORY): 
                     raise InputGCodeDirectoryNotFoundException()
             if not os.path.exists(
                 os.path.dirname(os.getcwd()) 
-                + inputs_father_directory_path
-                + input_image_directory): 
+                + INPUTS_FATHER_DIRECTORY_PATH
+                + INPUT_IMAGE_DIRECTORY): 
                     raise InputImageDirectoryNotFoundException()
             if not os.path.exists(
                 os.path.dirname(os.getcwd()) 
-                + inputs_father_directory_path
-                + input_metadata_directory):
+                + INPUTS_FATHER_DIRECTORY_PATH
+                + INPUT_METADATA_DIRECTORY):
                     raise InputMetadataDirectoryNotFoundException()
         except InputGCodeDirectoryNotFoundException as e:
             print(e)
             os.mkdir(
                 os.path.dirname(os.getcwd()) 
-                + inputs_father_directory_path
-                + input_gcode_directory)
+                + INPUTS_FATHER_DIRECTORY_PATH
+                + INPUT_GCODE_DIRECTORY)
         except InputImageDirectoryNotFoundException as e:
             print(e)
             os.mkdir(
                 os.path.dirname(os.getcwd())
-                + inputs_father_directory_path
-                + input_image_directory)
+                + INPUTS_FATHER_DIRECTORY_PATH
+                + INPUT_IMAGE_DIRECTORY)
         except InputMetadataDirectoryNotFoundException as e:
             print(e)
             os.mkdir(
                 os.path.dirname(os.getcwd())
-                + inputs_father_directory_path
-                + input_metadata_directory)
+                + INPUTS_FATHER_DIRECTORY_PATH
+                + INPUT_METADATA_DIRECTORY)
     
     @classmethod
     def _check_data(
@@ -270,11 +272,11 @@ class Extract(object):
                 if os.path.isfile(image_path):
                     if not any(
                         [image_name.split(".")[1] == image_file_extension 
-                         for image_file_extension in image_file_extensions]):
+                         for image_file_extension in IMAGE_FILE_EXTENSIONS]):
                         raise NonSupportedImageExtensionException(
                             image_name.split(".")[0], 
                             image_name.split(".")[1], 
-                            ", ".join(image_file_extensions))
+                            ", ".join(IMAGE_FILE_EXTENSIONS))
                 else: 
                     raise ImageNotFileException(image_name)
             else: 
@@ -282,7 +284,7 @@ class Extract(object):
             
             if os.path.exists(gcode_path):
                 if os.path.isfile(gcode_path):
-                    if not gcode_name.split(".")[1] == gcode_file_extension:
+                    if not gcode_name.split(".")[1] == GCODE_FILE_EXTENSION:
                         raise NonSupportedGcodeExtensionException(
                             gcode_name.split(".")[0], 
                             gcode_name.split(".")[1])
@@ -295,7 +297,7 @@ class Extract(object):
                 if os.path.exists(metadata_path):
                     if os.path.isfile(metadata_path):
                         if not (metadata_name.split(".")[1] 
-                                == metadata_file_extension):
+                                == METADATA_FILE_EXTENSION):
                             raise NonSupportedMetadataExtensionException(
                                 metadata_name.split(".")[0], 
                                 metadata_name.split(".")[1])

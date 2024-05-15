@@ -142,10 +142,10 @@ class GCodeAnalizer(object):
             elif cls._is_retract_length(line):
                 continue
             # Pass by any coord position between wipe comments
-            elif line.strip() == wipe_start_comment: 
+            elif line.strip() == WIPE_START_COMMENT: 
                 wiping = True
                 continue
-            elif line.strip() == wipe_end_comment: 
+            elif line.strip() == WIPE_END_COMMENT: 
                 wiping = False
                 continue
             # Check new coords
@@ -227,7 +227,7 @@ class GCodeAnalizer(object):
             float: Output strand
         """
         
-        return input_strand * extrusion_data / coords_distance
+        return INPUT_STRAND * extrusion_data / coords_distance
     
     @classmethod
     def _calculate_width(
@@ -248,9 +248,9 @@ class GCodeAnalizer(object):
             float: Filament width
         """
         
-        return round((output_strand - math.pi * math.pow(layer_height / 2, 2)) 
-                / layer_height 
-                + layer_height, 
+        return round((output_strand - math.pi * math.pow(LAYER_HEIGHT / 2, 2)) 
+                / LAYER_HEIGHT 
+                + LAYER_HEIGHT, 
                 2)
         
     @classmethod
@@ -277,7 +277,7 @@ class GCodeAnalizer(object):
                 acknowledge if it is or not a new layer
         """
         
-        if line.strip() == layer_change_comment:
+        if line.strip() == LAYER_CHANGE_COMMENT:
             if not first_layer: 
                 layer += 1
             
@@ -300,7 +300,7 @@ class GCodeAnalizer(object):
             bool: Boolean to acknowledge if it is or not the z value
         """
         
-        if z_value_comment in line:
+        if Z_VALUE_COMMENT in line:
             z_value = float(line
                 .strip()
                 .split(":")[1])
@@ -324,7 +324,7 @@ class GCodeAnalizer(object):
             bool: Boolean to acknowledge if it is or not the height value
         """
         
-        if height_value_comment in line:
+        if HEIGHT_VALUE_COMMENT in line:
             height_value = float(line
                 .strip()
                 .split(":")[1])
@@ -349,7 +349,7 @@ class GCodeAnalizer(object):
                 Boolean to acknowledge if it is or not the retract length value
         """
         
-        if retract_length_comment in line:
+        if RETRACT_LENGTH_COMMENT in line:
             cls._retract_length = float(line.split("=")[1].strip())
             
             return True
@@ -382,7 +382,7 @@ class GCodeAnalizer(object):
                 is a new perimeter type
         """
         
-        for type in perimeter_types:
+        for type in PERIMETER_TYPES:
             if line.strip() == type:
                 if not first_layer_type: 
                     layer_type += 1
@@ -414,25 +414,25 @@ class GCodeAnalizer(object):
                 initial coord
         """
         
-        if (all([char in line for char in gcode_initial_position_symbols])
-                and gcode_extrusion_symbol not in line
+        if (all([char in line for char in GCODE_INITIAL_POSITION_SYMBOLS])
+                and GCODE_EXTRUSION_SYMBOL not in line
                 and not wiping
-                and gcode_comment_symbol not in line
-                and not line.startswith(gcode_comment_symbol)):
-            if gcode_feed_rate_symbol in line:
+                and GCODE_COMMENT_SYMBOL not in line
+                and not line.startswith(GCODE_COMMENT_SYMBOL)):
+            if GCODE_FEED_RATE_SYMBOL in line:
                 gcode_position = (line
                     .strip()
-                    .replace(gcode_initial_position_symbols[0], "")
-                    .replace(gcode_initial_position_symbols[1], "")
-                    .replace(gcode_initial_position_symbols[2], "")
-                    .replace(gcode_feed_rate_symbol, "0")
+                    .replace(GCODE_INITIAL_POSITION_SYMBOLS[0], "")
+                    .replace(GCODE_INITIAL_POSITION_SYMBOLS[1], "")
+                    .replace(GCODE_INITIAL_POSITION_SYMBOLS[2], "")
+                    .replace(GCODE_FEED_RATE_SYMBOL, "0")
                     .split())
             else:
                 gcode_position = (line
                     .strip()
-                    .replace(gcode_initial_position_symbols[0], "")
-                    .replace(gcode_initial_position_symbols[1], "")
-                    .replace(gcode_initial_position_symbols[2], "")
+                    .replace(GCODE_INITIAL_POSITION_SYMBOLS[0], "")
+                    .replace(GCODE_INITIAL_POSITION_SYMBOLS[1], "")
+                    .replace(GCODE_INITIAL_POSITION_SYMBOLS[2], "")
                     .split())
                 gcode_position.append(0.0)
             
@@ -461,16 +461,16 @@ class GCodeAnalizer(object):
             bool: Boolean to acknowledge it is a new coord
         """
         
-        if (all([char in line for char in gcode_position_symbols])
+        if (all([char in line for char in GCODE_POSITION_SYMBOLS])
                 and not wiping
-                and gcode_comment_symbol not in line
-                and not line.startswith(gcode_comment_symbol)):
+                and GCODE_COMMENT_SYMBOL not in line
+                and not line.startswith(GCODE_COMMENT_SYMBOL)):
             gcode_position = (line
                 .strip()
-                .replace(gcode_position_symbols[0], "")
-                .replace(gcode_position_symbols[1], "")
-                .replace(gcode_position_symbols[2], "")
-                .replace(gcode_position_symbols[3], "")
+                .replace(GCODE_POSITION_SYMBOLS[0], "")
+                .replace(GCODE_POSITION_SYMBOLS[1], "")
+                .replace(GCODE_POSITION_SYMBOLS[2], "")
+                .replace(GCODE_POSITION_SYMBOLS[3], "")
                 .split())
             
             cls._coords[layer][2][layer_type][1].append(

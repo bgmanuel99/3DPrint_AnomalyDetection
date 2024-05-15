@@ -101,3 +101,25 @@ class InputReferenceObjectWidthNotSpecifiedException(Exception):
             "The execution will use 18.74 as the default value which is the "
             "measure of a 2 cent coin in milimeters."
         ).format(self.message)
+        
+class InputTrainNeuralNetworkNotSpecifiedException(Exception):
+    """Raised when the user don't introduce the train neural network boolean 
+    to acknowledge if the neural network should be train or not
+
+    Parameters:
+        message (str): Explanation message of the error
+    """
+    
+    def __init__(
+            self, 
+            message=("You didn't specified if the neural network should be "
+                     "trained")) -> None:
+        self.message = message
+        
+        super().__init__(self.message)
+        
+    def __str__(self) -> str:
+        return (
+            "InputTrainNeuralNetworkNotSpecifiedException: {}. "
+            "The neural network won't be trained during the execution."
+        ).format(self.message)

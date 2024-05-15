@@ -1,40 +1,51 @@
+import os
 from typing import List
 
 # ******************* Extract data *******************
-inputs_father_directory_path: str = "/data/input/"
-input_image_directory: str = "image/"
-input_gcode_directory: str = "gcode/"
-input_metadata_directory: str = "metadata/"
-gcode_file_extension: str = "gcode"
-image_file_extensions: List[str] = [
+INPUTS_FATHER_DIRECTORY_PATH: str = "/data/input/"
+INPUT_IMAGE_DIRECTORY: str = "image/"
+INPUT_GCODE_DIRECTORY: str = "gcode/"
+INPUT_METADATA_DIRECTORY: str = "metadata/"
+GCODE_FILE_EXTENSION: str = "gcode"
+IMAGE_FILE_EXTENSIONS: List[str] = [
     "png", "jpg", "jpeg", "jpe", "bmp", "dib", "jp2", "pbm", "pgm", "ppm", 
     "sr", "ras", "tiff", "tif"]
-metadata_file_extension: str = "txt"
+METADATA_FILE_EXTENSION: str = "txt"
 
 # ******************* Low contrast detection *******************
-fraction_threshold: float = 0.35
+FRACTION_THRESHOLD: float = 0.35
 
 # ******************* Gcode analizer *******************
-gcode_comment_symbol: str = ";"
-gcode_extrusion_symbol: str = "E"
+GCODE_COMMENT_SYMBOL: str = ";"
+GCODE_EXTRUSION_SYMBOL: str = "E"
 # TODO: The feed rate could change, the only constant should be the F
-gcode_feed_rate_symbol: str = "F9000" # Traveling extruder speed
-gcode_position_symbols: str = ["G1", "X", "Y", gcode_extrusion_symbol]
-gcode_initial_position_symbols: str = ["G1", "X", "Y"]
-wipe_start_comment: str = ";WIPE_START"
-wipe_end_comment: str = ";WIPE_END"
-retract_length_comment: str = "; retract_length ="
-perimeter_types: str = [
+GCODE_FEED_RATE_SYMBOL: str = "F9000" # Traveling extruder speed
+GCODE_POSITION_SYMBOLS: tuple[str, ...] = [
+    "G1", "X", "Y", GCODE_EXTRUSION_SYMBOL]
+GCODE_INITIAL_POSITION_SYMBOLS: tuple[str, ...] = ["G1", "X", "Y"]
+WIPE_START_COMMENT: str = ";WIPE_START"
+WIPE_END_COMMENT: str = ";WIPE_END"
+RETRACT_LENGTH_COMMENT: str = "; retract_length ="
+PERIMETER_TYPES: str = [
     ";TYPE:External perimeter",
     ";TYPE:Internal infill"
 ]
-layer_change_comment: str = ";LAYER_CHANGE"
-z_value_comment: str = ";Z:"
-height_value_comment: str = ";HEIGHT:"
-input_strand: float = 2.404
-layer_height: float = 0.25
+LAYER_CHANGE_COMMENT: str = ";LAYER_CHANGE"
+Z_VALUE_COMMENT: str = ";Z:"
+HEIGHT_VALUE_COMMENT: str = ";HEIGHT:"
+INPUT_STRAND: float = 2.404
+LAYER_HEIGHT: float = 0.25
+
+# ******************* Siamese neural network *******************
+IMAGE_SHAPE: tuple[int] = (159, 120, 3)
+BATCH_SIZE: float = 64
+EPOCHS: int = 5
+MODEL_PATH: str = (os.path.dirname(os.getcwd()) 
+                   + "/data/classification/output/siamese_model.h5")
+PLOT_PATH: str = (os.path.dirname(os.getcwd()) 
+                  + "/data/classification/output/siamese_model_plot.png")
 
 # ******************* Load data *******************
-output_directory_path: str = "/data/output/"
-output_image_file_extension: str = "jpg"
-output_report_extension: str = "pdf"
+OUTPUT_DIRECTORY_PATH: str = "/data/output/"
+OUTPUT_IMAGE_FILE_EXTENSION: str = "jpg"
+OUTPUT_REPORT_EXTENSION: str = "pdf"

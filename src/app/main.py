@@ -11,6 +11,7 @@ if __name__ == "__main__":
     gcode_name = None
     metadata_name = None
     reference_object_width = None
+    train_neural_network = None
     
     for arg in sys.argv:
         input_app = input_app + " " + arg
@@ -31,6 +32,11 @@ if __name__ == "__main__":
                     metadata_name = input_name
                 case "reference_object_width":
                     reference_object_width = float(input_name)
+                case "train_neural_network":
+                    if input_name == "true":
+                        train_neural_network = True
+                    else:
+                        train_neural_network = False
     except ValueError as e:
         print(("InputPrefixException: You forgot to introduce a prefix or a "
                "value or introduced to many, review your input command."))
@@ -47,7 +53,11 @@ if __name__ == "__main__":
             metadata_name = ""
             raise InputMetadataNameNotSpecifiedException()
         elif not reference_object_width:
+            reference_object_width = 18.74
             raise InputReferenceObjectWidthNotSpecifiedException()
+        elif not train_neural_network:
+            train_neural_network = False
+            raise InputTrainNeuralNetworkNotSpecifiedException()
     except (
         InputExecutionTypeNotSpecifiedException, 
         InputImageNameNotSpecifiedException, 
@@ -55,11 +65,9 @@ if __name__ == "__main__":
         CommonPrints.system_out(e)
     except (
         InputMetadataNameNotSpecifiedException, 
-        InputReferenceObjectWidthNotSpecifiedException) as e:
+        InputReferenceObjectWidthNotSpecifiedException, 
+        InputTrainNeuralNetworkNotSpecifiedException) as e:
         print(e)
-    
-    if not reference_object_width:
-        reference_object_width = 18.74
                 
     match execution_type:
         case "anomaly_detection":
@@ -67,4 +75,5 @@ if __name__ == "__main__":
                 gcode_name=gcode_name, 
                 image_name=image_name, 
                 metadata_name=metadata_name, 
-                reference_object_width=reference_object_width)
+                reference_object_width=reference_object_width, 
+                train_neural_network=train_neural_network)
