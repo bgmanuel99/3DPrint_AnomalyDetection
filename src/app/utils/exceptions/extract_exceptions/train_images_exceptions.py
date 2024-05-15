@@ -109,5 +109,5 @@ class NotEnumeratedTrainImagesException(Exception):
     def __str__(self) -> str:
         return (
             "NotEnumeratedTrainImagesException: {}. The training images "
-            "should be enumerated from 0 to N."
+            "should have numeric names enumerated from 0 to N."
         ).format(self.message)

@@ -18,6 +18,48 @@ class TestLabelsDirectoryNotFoundException(Exception):
         ).format(self.message)
         
 class TestLabelsNotFoundException(Exception):
+    """Raised when the testing labels file doesn't exist.
+
+    Parameters:
+        message (str): Explanation message of the error
+    """
+    
+    def __init__(
+            self, 
+            message=(
+                "The testing labels file doesn't exist")) -> None:
+        self.message = message
+        
+        super().__init__(self.message)
+        
+    def __str__(self) -> str:
+        return (
+            "TestLabelsNotFoundException: {}. It should go by the name of "
+            "testY.txt"
+        ).format(self.message)
+        
+class TestLabelsNotFileException(Exception):
+    """Raised when the test labels is not a file.
+
+    Parameters:
+        message (str): Explanation message of the error
+    """
+    
+    def __init__(
+            self, 
+            message=("The test labels is not a valid file. "
+                     "Check the extension")) -> None:
+        self.message = message
+        
+        super().__init__(self.message)
+        
+    def __str__(self) -> str:
+        return (
+            "TrainLabelsNotFileException: {}. It should go by the name of "
+            "testY.txt"
+        ).format(self.message)
+        
+class TestLabelsZeroDataException(Exception):
     """Raised when there are no testing labels to be extracted.
 
     Parameters:
@@ -34,60 +76,7 @@ class TestLabelsNotFoundException(Exception):
         super().__init__(self.message)
         
     def __str__(self) -> str:
-        return "TestLabelsNotFoundException: {}".format(self.message)
-        
-class TestLabelsNotFileException(Exception):
-    """Raised when the test labels is not a file.
-
-    Parameters:
-        labels_file_name (str): Name of the test labels file
-        message (str): Explanation message of the error
-    """
-    
-    def __init__(
-            self, 
-            labels_file_name, 
-            message=("The test labels is not a valid file. "
-                     "Check the extension")) -> None:
-        self.labels_file_name = labels_file_name
-        self.message = message
-        
-        super().__init__(self.message)
-        
-    def __str__(self) -> str:
-        return (
-            "TestLabelsNotFileException: {}. Test labels file name -> '{}'. "
-        ).format(self.message, self.labels_file_name)
-        
-class NonSupportedTestLabelsExtensionException(Exception):
-    """Raised when the test labels file has a non supported file extension.
-
-    Parameters:
-        labels_file_name (str): Name of the test labels file
-        labels_file_name_extension (str): 
-            The extension of the test labels file
-        message (str): Explanation message of the error
-    """
-    
-    def __init__(
-            self, 
-            labels_file_name, 
-            labels_file_name_extension, 
-            message="") -> None:
-        self.labels_file_name = labels_file_name
-        self.labels_file_name_extension = labels_file_name_extension
-        self.message = message
-        
-        super().__init__(self.message)
-        
-    def __str__(self) -> str:
-        return (
-            "NonSupportedTestLabelsExtensionException: The test labels file "
-            "'{}' has a '{}' extension, which is not supported. This is the " 
-            "test labels file supported extension: .txt"
-        ).format(
-            self.labels_file_name, 
-            self.labels_file_name_extension)
+        return "TestLabelsZeroDataException: {}.".format(self.message)
 
 class IncorrectTestLabelsFormatException(Exception):
     """Raised when the testing labels are not correctly formated.
@@ -108,27 +97,6 @@ class IncorrectTestLabelsFormatException(Exception):
         return (
             "IncorrectTestLabelsFormatException: {}. The testing labels "
             "should be introduced one for each line of the file."
-        ).format(self.message)
-        
-class TestLabelsIncorrectFileNameException(Exception):
-    """Raised when the testing labels have an incorrect file name.
-
-    Parameters:
-        message (str): Explanation message of the error
-    """
-    
-    def __init__(
-            self, 
-            message="The testing labels have an incorrect file name"
-            ) -> None:
-        self.message = message
-        
-        super().__init__(self.message)
-        
-    def __str__(self) -> str:
-        return (
-            "TestLabelsIncorrectFileNameException: {}. The testing labels "
-            "file should go by the name of 'testY'."
         ).format(self.message)
         
 class TestLabelsIncorrectMatchTestImagesException(Exception):

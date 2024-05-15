@@ -36,6 +36,14 @@ class AnomalyDetection(object):
             Raised when the image input directory is not found
         InputMetadataDirectoryNotFoundException:
             Raised when the metadata input directory is not found
+        TrainImagesDirectoryNotFoundException:
+            Raised when the train images directory is not found
+        TrainLabelsDirectoryNotFoundException:
+            Raised when the train labels directory is not found
+        TestImagesDirectoryNotFoundException:
+            Raised when the test images directory is not found
+        TestLabelsDirectoryNotFoundException:
+            Raised when the test labels directory is not found
         ExtractImageException: 
             Raised when the input image cannot be found
         ImageNotFileException: 
@@ -56,6 +64,46 @@ class AnomalyDetection(object):
         NonSupportedMetadataExtensionException:
             Raised when the input metadata file has a non supported file 
             extension
+        TrainImagesNotFoundException: 
+            Raised when there are no training images to be extracted
+        TestImagesNotFoundException: 
+            Raised when there are no testing images to be extracted
+        TrainImageNotFileException: 
+            Raised when any of the train images is not a file
+        TestImageNotFileException: 
+            Raised when any of the test images is not a file
+        NonSupportedTrainImageExtensionException: 
+            Raised when any of the train images has a non supported file 
+            extension
+        NonSupportedTestImageExtensionException: 
+            Raised when any of the test images has a non supported file 
+            extension
+        NotEnumeratedTrainImagesException: 
+            Raised when the training images are not correctly enumerated
+        NotEnumeratedTestImagesException: 
+            Raised when the testing images are not correctly enumerated
+        TrainLabelsNotFoundException: 
+            Raised when the training labels file doesn't exist
+        TestLabelsNotFoundException: 
+            Raised when the testing labels file doesn't exist
+        TrainLabelsNotFileException: 
+            Raised when the train labels is not a file
+        TestLabelsNotFileException: 
+            Raised when the test labels is not a file
+        TrainLabelsZeroDataException: 
+            Raised when there are no training labels to be extracted
+        TestLabelsZeroDataException: 
+            Raised when there are no testing labels to be extracted
+        IncorrectTrainLabelsFormatException: 
+            Raised when the training labels are not correctly formated
+        IncorrectTestLabelsFormatException: 
+            Raised when the testing labels are not correctly formated
+        TrainLabelsIncorrectMatchTrainImagesException: 
+            Raised when the training labels file contain more or less 
+            labels than there are training images
+        TestLabelsIncorrectMatchTestImagesException: _description_
+            Raised when the testing labels file contain more or less 
+            labels than there are testing images
         LowContrastDetectionException: 
             Raised when an image is low contrast and cannot be used in the 
             pipeline
@@ -87,8 +135,12 @@ class AnomalyDetection(object):
         # Extract data
         (gcode_file, 
          image, 
-         metadata_file) = Extract.extract_process_data(
-            gcode_name, image_name, metadata_name)
+         metadata_file, 
+         trainX, 
+         trainY, 
+         testX, 
+         testY) = Extract.extract_process_data(
+            gcode_name, image_name, metadata_name, train_neural_network)
 
         # Detect low contrast images
         LowContrastDetection.low_contrast_dectection(image)

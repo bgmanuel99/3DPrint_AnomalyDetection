@@ -12,6 +12,14 @@ IMAGE_FILE_EXTENSIONS: List[str] = [
     "sr", "ras", "tiff", "tif"]
 METADATA_FILE_EXTENSION: str = "txt"
 
+FATHER_CLASSIFICATION_DIRECTORY_PATH: str = "/data/classification/"
+TRAIN_IMAGES_DIRECTORY: str = "trainX/"
+TRAIN_LABELS_DIRECTORY: str = "trainY/"
+TRAIN_LABELS_FILE_NAME: str = "trainY.txt"
+TEST_IMAGES_DIRECTORY: str = "testX/"
+TEST_LABELS_DIRECTORY: str = "testY/"
+TEST_LABELS_FILE_NAME: str = "testY.txt"
+
 # ******************* Low contrast detection *******************
 FRACTION_THRESHOLD: float = 0.35
 
