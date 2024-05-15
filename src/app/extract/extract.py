@@ -85,19 +85,19 @@ class Extract(object):
                 metadata name that should equals a void string
         """
         
-        gcode_path = "{}{}{}{}".format(
+        gcode_path: str = "{}{}{}{}".format(
             os.path.dirname(os.getcwd()), 
             INPUTS_FATHER_DIRECTORY_PATH, 
             INPUT_GCODE_DIRECTORY, 
             gcode_name)
         
-        image_path = "{}{}{}{}".format(
+        image_path: str = "{}{}{}{}".format(
             os.path.dirname(os.getcwd()), 
             INPUTS_FATHER_DIRECTORY_PATH, 
             INPUT_IMAGE_DIRECTORY, 
             image_name)
         
-        metadata_path = "{}{}{}{}".format(
+        metadata_path: str = "{}{}{}{}".format(
             os.path.dirname(os.getcwd()), 
             INPUTS_FATHER_DIRECTORY_PATH, 
             INPUT_METADATA_DIRECTORY, 
