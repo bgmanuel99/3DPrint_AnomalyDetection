@@ -188,7 +188,7 @@ class Extract(object):
                     io.TextIOWrapper,
                     None, 
                     None, 
-                    None, 
+                    np.ndarray, 
                     None, 
                     Model]
                 | tuple[
@@ -197,7 +197,7 @@ class Extract(object):
                     str,
                     None, 
                     None, 
-                    None, 
+                    np.ndarray, 
                     None, 
                     Model]):
         """Method to extract process data.
@@ -238,7 +238,7 @@ class Extract(object):
                     io.TextIOWrapper,
                     None, 
                     None, 
-                    None, 
+                    np.ndarray, 
                     None, 
                     Model]
                 | tuple[
@@ -247,7 +247,7 @@ class Extract(object):
                     str,
                     None, 
                     None, 
-                    None, 
+                    np.ndarray, 
                     None, 
                     Model]
             ):
@@ -256,7 +256,7 @@ class Extract(object):
                 nerual network data are optional to be extracted. If the model 
                 is to trained during the execution this method will return the 
                 training data if not it will return a pretrained model 
-                specified by the user
+                specified by the user and the testX data for predictions
         """
         
         gcode_path: str = "{}{}{}{}".format(
@@ -277,12 +277,12 @@ class Extract(object):
             INPUT_METADATA_DIRECTORY, 
             metadata_name)
         
-        model_path: str = "{}{}{}{}".format(
-            os.path.dirname(os.getcwd()), 
-            MODEL_PATH, 
-            pretrained_model_name)
-        
         if not train_neural_network:
+            model_path: str = "{}{}{}".format(
+                os.path.dirname(os.getcwd()), 
+                MODEL_PATH, 
+                pretrained_model_name)
+            
             cls._check_models_directory()
             
             cls._check_models_data(model_path, pretrained_model_name)
@@ -299,15 +299,15 @@ class Extract(object):
                            + TRAIN_LABELS_DIRECTORY
                            + TRAIN_LABELS_FILE_NAME)
             
-            testX_path = (os.path.dirname(os.getcwd()) 
-                          + FATHER_CLASSIFICATION_DIRECTORY_PATH 
-                          + TEST_IMAGES_DIRECTORY)
-            
             testY_path = (os.path.dirname(os.getcwd()) 
-                          + FATHER_CLASSIFICATION_DIRECTORY_PATH 
-                          + TEST_LABELS_DIRECTORY
-                          + TEST_LABELS_FILE_NAME)
+                            + FATHER_CLASSIFICATION_DIRECTORY_PATH 
+                            + TEST_LABELS_DIRECTORY
+                            + TEST_LABELS_FILE_NAME)
         
+        testX_path = (os.path.dirname(os.getcwd()) 
+                      + FATHER_CLASSIFICATION_DIRECTORY_PATH 
+                      + TEST_IMAGES_DIRECTORY)
+            
         # Check if directories exists
         cls._check_directories()
         
@@ -328,16 +328,19 @@ class Extract(object):
             # Check if train labels data exists and have the right format
             cls._check_classification_labels_data(trainY_path)
             
-            # Check if test images data exists and have the right format
-            test_images_list = cls._check_classification_images_data(
-                testX_path)
-            
             # Check if test labels data exists and have the right format
             cls._check_classification_labels_data(testY_path)
+            
+        # Check if test images data exists and have the right format
+        test_images_list = cls._check_classification_images_data(
+            testX_path)
         
         # Extract input data
         (gcode_file, image, metadata_file) = cls._extract_input_data(
             gcode_path, image_path, metadata_name, metadata_path)
+        
+        testX = cls._extract_classification_images_data(
+            testX_path, test_images_list)
         
         if train_neural_network:
             # Extract siamese neural network data
@@ -346,8 +349,6 @@ class Extract(object):
             trainY = cls._check_and_extract_classification_labels_data(
                 len(trainX), trainY_path)
             
-            testX = cls._check_classification_images_data(
-                testX_path, test_images_list)
             testY = cls._check_and_extract_classification_labels_data(
                 len(testX),  testY_path)
         
@@ -368,7 +369,7 @@ class Extract(object):
                 metadata_file, 
                 None, 
                 None, 
-                None, 
+                testX, 
                 None, 
                 model)
             

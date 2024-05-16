@@ -69,6 +69,8 @@ if __name__ == "__main__":
         elif not train_neural_network:
             train_neural_network = False
             raise InputTrainNeuralNetworkNotSpecifiedException()
+        elif not pretrained_model_name:
+            pretrained_model_name = ""
     except (
         InputExecutionTypeNotSpecifiedException, 
         InputImageNameNotSpecifiedException, 

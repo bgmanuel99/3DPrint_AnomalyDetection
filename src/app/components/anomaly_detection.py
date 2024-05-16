@@ -5,6 +5,7 @@ from typing import List
 # Add the src directory to sys.path
 sys.path.append(os.path.dirname(os.getcwd()))
 
+from app.utils.constants.constants import *
 from app.components.siamese_neural_network.siamese_neural_network import (
     SiameseNeuralNetwork)
 from app.extract.extract import Extract
@@ -161,9 +162,16 @@ class AnomalyDetection(object):
             pretrained_model_name)
          
         if train_neural_network:
-            (model, plot) = SiameseNeuralNetwork \
-                .construct_and_train_siamese_neural_network(
-                    trainX, trainY, testX, testY)
+            (model, 
+             history, 
+             pair_train_len, 
+             pair_test_len) = SiameseNeuralNetwork \
+                 .construct_and_train_siamese_neural_network(
+                     trainX, trainY, testX, testY)
+        else:
+            pair_train_len = None
+            pair_test_len = None
+            history = None
 
         # Detect low contrast images
         LowContrastDetection.low_contrast_dectection(image)
@@ -176,6 +184,10 @@ class AnomalyDetection(object):
          reference_object_pixels_area, 
          ssim_max_score_reference_object) = ImageSegmetation.segment_image(
             image)
+        
+        # Defect classification
+        (max_probability, max_probability_index) = SiameseNeuralNetwork \
+            .predict(model, image, testX)
            
         # Analize gcode file and extract data
         coords: List[List[object]] = GCodeAnalizer.extract_data(gcode_file)
@@ -197,8 +209,6 @@ class AnomalyDetection(object):
          impresion_defects_total_diff, 
          segmentation_defects_total_diff) = DefectsDetection.detect_defects(
             masked_3d_object, perfect_models)
-         
-        # Defect classification
          
         # Internal contours area calculation
         infill_contours_image, infill_areas = AreaCalculation.calculate_areas(
@@ -228,5 +238,16 @@ class AnomalyDetection(object):
             infill_contours_image, 
             infill_areas, 
             ssim_max_score_reference_object, 
+            # Classification
+            trainX, 
+            trainY, 
+            testX, 
+            testY, 
+            pair_train_len, 
+            pair_test_len, 
+            MODEL_NAME if train_neural_network else pretrained_model_name, 
+            history, 
+            max_probability, 
+            testX[max_probability_index], 
             # Extra data
             metadata_file)

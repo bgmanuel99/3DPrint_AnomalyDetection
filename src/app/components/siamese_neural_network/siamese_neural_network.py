@@ -1,4 +1,7 @@
+import os
 import cv2
+import h5py
+import keras
 import imutils
 import numpy as np
 import matplotlib.pyplot as plt
@@ -14,47 +17,104 @@ from keras.api.layers import (
     Lambda)
 from keras.api.optimizers import Adam
 import tf_keras.api._v2.keras.backend as K
+from keras.api.datasets import mnist
+import tensorflow as tf
+import random
+from app.common.common_prints import CommonPrints
 
 from app.utils.constants.constants import *
 
 class SiameseNeuralNetwork(object):
     
-    @classmethod
+    @staticmethod
     def construct_and_train_siamese_neural_network(
-            cls, 
-            trainX: np.ndarray, 
-            trainY: np.ndarray, 
-            testX: np.ndarray, 
-            testY: np.ndarray):
-        (trainX, testX) = cls._normalize_data(trainX, testX)
+            trainX, 
+            trainY, 
+            testX, 
+            testY):
+        np.random.seed(0)
+        tf.random.set_seed(2)
+        random.seed(3)
         
-        print("[INFO] Preparing positive and negative pairs...")
-        (pair_train, label_train) = cls._make_pairs(trainX, trainY)
-        print("Train images: {}".format(len(pair_train)))
-        print("Train labels: {}".format(len(label_train)))
-        (pair_test, label_test) = cls._make_pairs(testX, testY)
-        print("Test images: {}".format(len(pair_test)))
-        print("Test labels: {}".format(len(label_test)))
+        trainX = trainX / 255.0
+        testX = testX / 255.0
         
-        model = cls._configure_and_construct_siamese_network(True)
+        print("[INFO] preparing positive and negative pairs...")
+        (pair_train, label_train) = SiameseNeuralNetwork.make_pairs_for_training(
+            trainX, trainY)
+        print(len(pair_train))
+        (pair_test, label_test) = SiameseNeuralNetwork.make_pairs_for_training(
+            testX, testY)
+        print(len(pair_test))
         
-        model = cls._compile_model(model, True)
+        print("[INFO] Building siamese network...")
+        imgA = Input(shape=IMAGE_SHAPE)
+        imgB = Input(shape=IMAGE_SHAPE)
+        featureExtractor = SiameseNeuralNetwork.build_siamese_architecture(IMAGE_SHAPE)
+        featsA = featureExtractor(imgA)
+        featsB = featureExtractor(imgB)
         
-        model, history = cls._train_model(
-            model, pair_train, label_train, pair_test, label_test)
+        # Construct the siamese network
+        distance = Lambda(SiameseNeuralNetwork.euclidean_distance)([featsA, featsB])
+        outputs = Dense(1, activation="sigmoid")(distance)
+        model = Model(inputs=[imgA, imgB], outputs=outputs)
         
-        cls._plot_training(history)
+        print("[INFO] Compiling model...")
+        model.compile(
+            loss="binary_crossentropy", 
+            optimizer="adam",
+            metrics=["accuracy"])
         
-    @classmethod
-    def _normalize_data(
-            cls, 
-            trainX: np.ndarray, 
-            testX: np.ndarray) -> tuple[np.ndarray, np.ndarray]:
-        return trainX / 255.0, testX / 255.0
+        model.summary()
+        
+        print("[INFO] Training model...")
+        history = model.fit(
+            [pair_train[:, 0], pair_train[:, 1]], label_train[:],
+            validation_data=(
+                [pair_test[:, 0], pair_test[:, 1]], label_test[:]), 
+            batch_size=BATCH_SIZE, 
+            epochs=EPOCHS, 
+            shuffle=False)
+        
+        # Serialize the model to disk
+        print("[INFO] Saving siamese model...")
+        model.save(os.path.dirname(os.getcwd()) 
+                   + MODEL_PATH 
+                   + MODEL_NAME)
+        
+        print("[INFO] plotting training history...")
+        SiameseNeuralNetwork.plot_training(history)
+        
+        return model, history, len(pair_train), len(pair_test)
     
-    @classmethod
-    def _make_pairs(
-            cls, 
+    @staticmethod
+    def predict(
+            model: Model, 
+            original_image: np.ndarray, 
+            testX: np.ndarray) -> tuple[float, int]:
+        max_probability = 0.0
+        max_probability_index = 0
+        
+        original_image = imutils.resize(original_image, width=120)
+        
+        original_image = np.expand_dims(original_image, axis=0)
+        
+        original_image = original_image / 255.0
+        testX = testX / 255.0
+        
+        for index in range(len(testX)):
+            test_image = np.expand_dims(testX[index], axis=0)
+            preds = model.predict([original_image, test_image])
+            probability = preds[0][0]
+            
+            if probability > max_probability:
+                max_probability = probability
+                max_probability_index = index
+                
+        return max_probability, max_probability_index
+    
+    @staticmethod
+    def make_pairs_for_training(
             images: np.ndarray, 
             labels: np.ndarray) -> tuple[np.ndarray, np.ndarray]:
         pairImages = []
@@ -96,12 +156,10 @@ class SiameseNeuralNetwork(object):
         
         return (np.array(pairImages), np.array(pairLabels))
     
-    @classmethod
-    def _build_siamese_architecture(
-            cls, 
-            inputShape: tuple[int], 
-            embeddingDim:int =48, 
-            show_summary: bool=False) -> Model:
+    @staticmethod
+    def build_siamese_architecture(
+            inputShape, 
+            embeddingDim=48):
         # Specify the inputs for the feature extractor network
         inputs = Input(inputShape)
         
@@ -122,13 +180,15 @@ class SiameseNeuralNetwork(object):
         # Build the model
         model = Model(inputs, outputs)
         
-        if show_summary:
-            model.summary()
+        model.summary()
         
+        # Return the model to the calling function
         return model
     
-    @classmethod
-    def _euclidean_distance(cls, vectors):
+    @staticmethod
+    @keras.saving.register_keras_serializable()
+    def euclidean_distance(vectors):
+        # Unpack the vectors into separate lists
         (featsA, featsB) = vectors
         
         # Compute the sum of squared distances between the vectors
@@ -136,112 +196,27 @@ class SiameseNeuralNetwork(object):
             keepdims=True)
         
         # Return the euclidean distance between the vectors
-        distance = K.sqrt(K.maximum(sumSquared, K.epsilon()))
-        print("distance type", type(distance))
-        return distance
-    
-    @classmethod
-    def _configure_and_construct_siamese_network(
-            cls, 
-            show_summary: bool=False) -> Model:
-        # Configure the siamese network
-        print("[INFO] Building siamese network...")
-        imgA = Input(shape=IMAGE_SHAPE)
-        imgB = Input(shape=IMAGE_SHAPE)
-        featureExtractor = cls._build_siamese_architecture(
-            IMAGE_SHAPE, show_summary)
-        featsA = featureExtractor(imgA)
-        featsB = featureExtractor(imgB)
-        print("featsA type", type(featsA))
+        return K.sqrt(K.maximum(sumSquared, K.epsilon()))
         
-        # Construct the siamese network
-        distance = Lambda(
-            cls._euclidean_distance, output_shape=(None, 1))([featsA, featsB])
-        outputs = Dense(1, activation="sigmoid")(distance)
-        model = Model(inputs=[imgA, imgB], outputs=outputs)
-        
-        return model
-    
-    @classmethod
-    def _compile_model(
-            cls, 
-            model: Model, 
-            show_summary: bool=False) -> Model:
-        print("[INFO] Compiling model...")
-        model.compile(loss="binary_crossentropy", optimizer="adam",
-            metrics=["accuracy"])
-        
-        if show_summary:
-            model.summary()
-            
-        return model
-    
-    @classmethod
-    def _train_model(
-            cls, 
-            model: Model, 
-            pair_train: np.ndarray, 
-            label_train: np.ndarray, 
-            pair_test: np.ndarray, 
-            label_test: np.ndarray):
-        print("[INFO] Training model...")
-        history = model.fit(
-            [pair_train[:, 0], pair_train[:, 1]], 
-            label_train, 
-            validation_data=([pair_test[:, 0], pair_test[:, 1]], label_test), 
-            batch_size=BATCH_SIZE, 
-            epochs=EPOCHS)
-        print("history type", type(history))
-        
-        # Serialize the model to disk
-        print("[INFO] Saving siamese model...")
-        model.save(os.path.dirname(os.getcwd()) 
-                   + MODEL_PATH 
-                   + MODEL_NAME)
-        
-        return model, history
-    
-    @classmethod
-    def _plot_training(cls, history) -> None:
-        # Plot the training history
-        print("[INFO] Plotting training history...")
-        plt.style.use("ggplot")
-        plt.figure()
-        plt.plot(history.history["loss"], label="train_loss")
-        plt.plot(history.history["accuracy"], label="train_acc")
-        plt.title("Training Accuracy")
-        plt.xlabel("Epoch")
-        plt.ylabel("Accuracy")
-        plt.legend(loc="lower left")
-        plt.savefig(os.path.dirname(os.getcwd()) 
-                    + PLOT_PATH 
-                    + PLOT_NAME)
-        
-    @classmethod
-    def _build_montage(
-            cls, 
-            pair_train: np.ndarray, 
-            label_train: np.ndarray) -> None:
+    @staticmethod
+    def build_montage(
+            pairTrain: np.ndarray, 
+            labelTrain: np.ndarray) -> None:
         images = []
         
         # Loop over a sample of our training pairs
-        for i in np.random.choice(np.arange(0, len(pair_train)), size=(49,)):
+        for i in np.random.choice(np.arange(0, len(pairTrain)), size=(49,)):
             # Grab the current image pair and label
-            imageA = pair_train[i][0]
-            imageB = pair_train[i][1]
-            label = label_train[i]
-            
-            imageA = imutils.resize(imageA, width=28, height=28)
-            imageA = cv2.cvtColor(imageA, cv2.COLOR_BGR2GRAY)
-            imageB = imutils.resize(imageB, width=28, height=28)
-            imageB = cv2.cvtColor(imageB, cv2.COLOR_BGR2GRAY)
+            imageA = pairTrain[i][0]
+            imageB = pairTrain[i][1]
+            label = labelTrain[i]
             
             # To make it easier to visualize the pairs and their positive or
             # negative annotations, we're going to "pad" the pair with four
             # pixels along the top, bottom, and right borders, respectively
-            output = np.zeros((45, 60), dtype="uint8")
+            output = np.zeros((36, 60), dtype="uint8")
             pair = np.hstack([imageA, imageB])
-            output[4:41, 0:56] = pair
+            output[4:32, 0:56] = pair
             
             # Set the text label for the pair along with what color we are
             # going to draw the pair in (green for a "positive" pair and
@@ -260,7 +235,31 @@ class SiameseNeuralNetwork(object):
             # Add the pair visualization to our list of output images
             images.append(vis)
             
+        # Construct the montage for the images
         montage = build_montages(images, (96, 51), (7, 7))[0]
         
+        # Show the output montage
         cv2.imshow("Siamese Image Pairs", montage)
         cv2.waitKey(0)
+        
+    @staticmethod
+    def plot_training(history) -> None:
+        """Method to save the history of the trained model
+
+        Parameters:
+            history (_type_): History of the trained model
+        """
+        
+        plt.style.use("ggplot")
+        plt.figure()
+        plt.plot(history.history["loss"], label="train_loss")
+        plt.plot(history.history["val_loss"], label="val_loss")
+        plt.plot(history.history["accuracy"], label="train_acc")
+        plt.plot(history.history["val_accuracy"], label="val_acc")
+        plt.title("Training Loss and Accuracy")
+        plt.xlabel("Epoch")
+        plt.ylabel("Loss/Accuracy")
+        plt.legend(loc="lower left")
+        plt.savefig(os.path.dirname(os.getcwd()) 
+                    + OUTPUT_DIRECTORY_PATH 
+                    + PLOT_NAME)
