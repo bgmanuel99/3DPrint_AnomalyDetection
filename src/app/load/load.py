@@ -2,7 +2,7 @@ import os
 import io
 import cv2
 import numpy as np
-from typing import List
+from typing import List, Dict
 from decimal import Decimal
 from reportlab.lib import colors
 from reportlab.lib.units import cm
@@ -11,6 +11,7 @@ from reportlab.lib.pagesizes import A4
 from reportlab.pdfbase import pdfmetrics
 from reportlab.pdfgen.canvas import Canvas
 from reportlab.pdfbase.ttfonts import TTFont
+from keras.src.callbacks.history import History
 from reportlab.pdfbase.pdfmetrics import stringWidth
 from reportlab.pdfgen.textobject import PDFTextObject
 
@@ -42,6 +43,18 @@ class Load(object):
                 infill_contours_image: np.ndarray, 
                 infill_areas: List[List[object]], 
                 ssim_max_score_reference_object: float, 
+                # Classification
+                trainX: np.ndarray | None, 
+                trainY: np.ndarray | None, 
+                testX: np.ndarray, 
+                testY: np.ndarray, 
+                pair_train_len: int | None, 
+                pair_test_len: int | None, 
+                model_name: str, 
+                history: History, 
+                max_probability: float, 
+                testX_image: np.ndarray, 
+                testY_label: int, 
                 # Extra data
                 metadata_file: io.TextIOWrapper | str):
             Method to create the final process report
@@ -51,6 +64,8 @@ class Load(object):
             Method to insert the input process data
         _insert_impresion_defects_data ():
             Method to insert impresion defects detection data
+        _insert_classification_data ():
+            Method to insert neural network and classification data
         _insert_areas_calculations_data ():
             Method to insert areas calculations data
         _insert_text (
@@ -96,8 +111,35 @@ class Load(object):
     _segmentation_defect_total_diff: float = None
     _infill_areas: List[List[object]] = None
     _ssim_max_score_reference_object: float = None
+    _trainX: np.ndarray | None = None
+    _trainY: np.ndarray | None = None
+    _testX: np.ndarray = None
+    _testY: np.ndarray = None
+    _pair_train_len: int | None = None
+    _pair_test_len: int | None = None
+    _model_name: str = None
+    _history: History | None = None
+    _max_probability: float = None
+    _testX_image: np.ndarray = None
+    _testY_label: int = None
     _metadata_file: io.TextIOWrapper | str = None
     _image_paths: List[str] = None
+    _type_of_defects: Dict[str, str] = {
+        "0": "Bad material adhesion", 
+        "1": "Low Z-offset"}
+    _defects_recomendations: Dict[str, str] = {
+        "0": (os.path.dirname(os.getcwd()) 
+              + RECOMENDATIONS_PATH 
+              + BAD_MATERIAL_ADHESION_FILE_NAME), 
+        "1": (os.path.dirname(os.getcwd()) 
+              + RECOMENDATIONS_PATH 
+              + LOW_Z_OFFSET_FILE_NAME), 
+        "2": (os.path.dirname(os.getcwd()) 
+              + RECOMENDATIONS_PATH 
+              + STAINS_FILE_NAME), 
+        "3": (os.path.dirname(os.getcwd()) 
+              + RECOMENDATIONS_PATH 
+              + STRAND_WEAR_FILE_NAME)}
     
     @classmethod
     def load_data(
@@ -121,6 +163,18 @@ class Load(object):
             infill_contours_image: np.ndarray, 
             infill_areas: List[List[object]], 
             ssim_max_score_reference_object: float, 
+            # Classification
+            trainX: np.ndarray | None, 
+            trainY: np.ndarray | None, 
+            testX: np.ndarray, 
+            testY: np.ndarray, 
+            pair_train_len: int | None, 
+            pair_test_len: int | None, 
+            model_name: str, 
+            history: History | None, 
+            max_probability: float, 
+            testX_image: np.ndarray, 
+            testY_label: int, 
             # Extra data
             metadata_file: io.TextIOWrapper | str) -> None:
         """Method to create the final process report
@@ -157,9 +211,36 @@ class Load(object):
             ssim_max_score_reference_object (float): 
                 SSIM max score from the images of the reference object and its 
                 perfect models
+            trainX (np.ndarray | None): 
+                Training images
+            trainY (np.ndarray | None): 
+                Training labels
+            testX (np.ndarray): 
+                Testing images
+            testY (np.ndarray): 
+                Testing labels
+            pair_train_len (int | None): 
+                Length of the training pair images
+            pair_test_len (int | None): 
+                Length of the testing pair images
+            model_name (str): 
+                Name of the trained or pretrained model
+            history (History | None): 
+                History of the trained model
+            max_probability (float): 
+                Max predicted probability between the original image and the 
+                testX dataset
+            testX_image (np.ndarray): 
+                Image from the testing dataset with more similarity to the 
+                original image
+            testY_label (int): 
+                Label for the testX image with more similarity to the original 
+                image
             metadata_file (io.TextIOWrapper | str): 
                 Metadata file
         """
+        
+        print("[INFO] Creating final report")
         
         cls._image_name = image_name
         cls._gcode_name = gcode_name
@@ -172,10 +253,26 @@ class Load(object):
         cls._segmentation_defect_total_diff = segmentation_defects_total_diff
         cls._infill_areas = infill_areas
         cls._ssim_max_score_reference_object = ssim_max_score_reference_object
+        cls._trainX = trainX
+        cls._trainY = trainY
+        cls._testX = testX
+        cls._testY = testY
+        cls._pair_train_len = pair_train_len
+        cls._pair_test_len = pair_test_len
+        cls._model_name = model_name
+        cls._history = history
+        cls._max_probability = max_probability
+        cls._testX_image = testX_image
+        cls._testY_label = testY_label
         cls._metadata_file = metadata_file
         
         # Check if output directory exists
         cls._check_output_directory()
+        
+        siamese_model_plot = cv2.imread("{}".format(
+            (os.path.dirname(os.getcwd()) 
+             + OUTPUT_DIRECTORY_PATH 
+             + PLOT_NAME)))
         
         # Load the resultant images to the output folder
         cls._image_paths = cls._load_images((
@@ -183,7 +280,9 @@ class Load(object):
              "perfect_model", 
              "masked_3d_object", 
              "masked_3d_object_with_defects", 
-             "infill_contours_image"), 
+             "infill_contours_image", 
+             "testX_image", 
+             "reverse_siamese_model_plot"), 
             # Flip the images vertically so when they are draw in the report 
             # they stay in the correct position as the report will draw them
             # upside down
@@ -191,26 +290,24 @@ class Load(object):
              cv2.flip(perfect_model, 0), 
              cv2.flip(masked_3d_object, 0), 
              cv2.flip(masked_3d_object_with_defects, 0), 
-             cv2.flip(infill_contours_image, 0))))
+             cv2.flip(infill_contours_image, 0), 
+             cv2.flip(testX_image, 0), 
+             cv2.flip(siamese_model_plot, 0))))
         
         try:
             # Create pdf report
-            cls._create_pdf_report(image_name, gcode_name)
+            cls._create_pdf_report()
         except Exception as e:
             cls._delete_loaded_images()
             CommonPrints.system_out(e)
         finally:
-            # Delete the resultant images from the output folder after inserting
-            # them in the report pdf
+            # Delete the resultant images from the output folder after # 
+            # inserting them in the report pdf
             cls._delete_loaded_images()
         
     @classmethod
-    def _create_pdf_report(cls, image_name: str, gcode_name: str) -> None:
+    def _create_pdf_report(cls) -> None:
         """Method that inserts all the data into a report and saves it
-
-        Parameters:
-            image_name (str): Original image name
-            gcode_name (str): Gcode file name
         """
         
         pdfmetrics.registerFont(TTFont(
@@ -238,8 +335,8 @@ class Load(object):
             "{}{}{}_{}.{}".format(
                 os.path.dirname(os.getcwd()), 
                 OUTPUT_DIRECTORY_PATH, 
-                image_name.split(".")[0], 
-                gcode_name.split(".")[0], 
+                cls._image_name.split(".")[0], 
+                cls._gcode_name.split(".")[0], 
                 OUTPUT_REPORT_EXTENSION), 
             pagesize=A4, 
             bottomup=0)
@@ -269,6 +366,10 @@ class Load(object):
         
         # Insert defects calculation data
         cls._insert_impresion_defects_data()
+        cls._draw_text_and_reset_page(True)
+        
+        # Insert classification data
+        cls._insert_classification_data()
         cls._draw_text_and_reset_page(True)
         
         # Insert areas calculation data
@@ -452,14 +553,14 @@ class Load(object):
             text_line=(
                 "[Left] Perfect model, size: {} (height, width, channels) "
                 "pixels."
-            ).format(cls._original_image.shape, cls._original_image.shape))
+            ).format(cls._original_image.shape))
         cls._insert_text(
             x_coord=-1.0, 
             y_coord=0.25, 
             text_line=(
                 "[Middle] Masked 3d printed object, size: {} (height, width, "
                 "channels) pixels."
-            ).format(cls._original_image.shape, cls._original_image.shape))
+            ).format(cls._original_image.shape))
         cls._insert_text(
             x_coord=-1.0, 
             y_coord=0.25, 
@@ -467,6 +568,226 @@ class Load(object):
                 "[Right] Masked 3d printed object with defects, size {} "
                 "(height, width, channels) pixels."
             ).format(cls._original_image.shape))
+        
+    @classmethod
+    def _insert_classification_data(cls) -> None:
+        """Method to insert neural network and classification data
+        """
+        
+        # Classification data title
+        cls._insert_text(
+            2.0, 
+            2.0, 
+            font_size=16, 
+            color=colors.red, 
+            text_line="Classification")
+        
+        # Training and testing data
+        cls._insert_text(
+            x_coord=0.5, 
+            y_coord=0.5, 
+            font_type="Arial-Bold", 
+            text_line="· Train and test images and labels lenght:")
+        if cls._trainX is not None:
+            cls._insert_text(
+                x_coord=0.5, 
+                y_coord=0.25,
+                text_line="- Train images: {}".format(len(cls._trainX)))
+        else:
+            cls._insert_text(
+                x_coord=0.5, 
+                y_coord=0.25,
+                text_line="- Train images: Using pretrained model")
+        if cls._trainY is not None:
+            cls._insert_text(
+                y_coord=0.25,
+                text_line="- Train labels: {}".format(len(cls._trainY)))
+        else:
+            cls._insert_text(
+                y_coord=0.25,
+                text_line="- Train labels: Using pretrained model")
+        cls._insert_text(
+            y_coord=0.25,
+            text_line="- Test images: {}".format(len(cls._testX)))
+        cls._insert_text(
+            y_coord=0.25,
+            text_line="- Test labels: {}".format(len(cls._testY)))
+        cls._insert_text(
+            x_coord=-0.5, 
+            y_coord=0.5, 
+            font_type="Arial-Bold", 
+            text_line="· Train and test pair images lenght:")
+        if cls._pair_train_len:
+            cls._insert_text(
+                x_coord=0.5, 
+                y_coord=0.25,
+                text_line="- Pair train images: {}".format(
+                    cls._pair_train_len))
+        else:
+            cls._insert_text(
+                x_coord=0.5, 
+                y_coord=0.25,
+                text_line="- Pair train images: Using pretrained model")
+        if cls._pair_test_len:
+            cls._insert_text(
+                y_coord=0.25,
+                text_line="- Pair test images: {}".format(
+                    cls._pair_test_len))
+        else:
+            cls._insert_text(
+                y_coord=0.25,
+                text_line="- Pair test images: Using pretrained model")
+        
+        # Model name
+        cls._insert_text(
+            x_coord=-0.5, 
+            y_coord=0.5, 
+            font_type="Arial-Bold", 
+            text_line="· Model name:")
+        cls._insert_text(
+            x_coord=0.5, 
+            y_coord=0.25,
+            text_line="{}".format(cls._model_name))
+
+        # Model history
+        cls._insert_text(
+            x_coord=-0.5, 
+            y_coord=0.5, 
+            font_type="Arial-Bold", 
+            text_line="· Model history:")
+        if cls._history:
+            cls._insert_text(
+                x_coord=0.5, 
+                y_coord=0.25,
+                text_line="- Accuracy: {:.3E} %".format(
+                    Decimal(cls._history.history["accuracy"][-1])))
+            cls._insert_text(
+                y_coord=0.25,
+                text_line="- Loss: {:.3E}".format(
+                    Decimal(cls._history.history["loss"][-1])))
+            cls._insert_text(
+                y_coord=0.25,
+                text_line="- Validation accuracy: {:.3E} %".format(
+                    Decimal(cls._history.history["val_accuracy"][-1])))
+            cls._insert_text(
+                y_coord=0.25,
+                text_line="- Validation loss: {:.3E}".format(
+                    Decimal(cls._history.history["val_loss"][-1])))
+            cls._report.drawImage(
+                image=cls._image_paths[6], 
+                x=(cls._report_width-(15*cm))/2, 
+                y=cls._report_height*0.5, 
+                width=15*cm, 
+                height=10*cm)
+            cls._draw_text_and_reset_page(True)
+        else:
+            cls._insert_text(
+                x_coord=0.5, 
+                y_coord=0.25,
+                text_line="Using pretrained model")
+        
+        # Defect classification
+        defect_classification_title_x_offset = 2.5 if cls._history else -0.5
+        defect_classification_title_y_offset = 2.0 if cls._history else 0.5
+        cls._insert_text(
+            x_coord=defect_classification_title_x_offset, 
+            y_coord=defect_classification_title_y_offset, 
+            font_type="Arial-Bold", 
+            text_line="· Defect classification:")
+        cls._insert_text(
+            x_coord=0.5, 
+            y_coord=0.25,
+            text_line="- Prediction probability: {:.3E} %".format(
+                Decimal(cls._max_probability.item())))
+        cls._insert_text(
+            y_coord=0.25,
+            text_line="- Type of defect: {} ".format(
+                cls._type_of_defects[str(cls._testY_label)]))
+        classification_images_y_offset = 0.15 if cls._history else 0.5
+        cls._report.drawImage(
+            image=cls._image_paths[0], 
+            x=cls._report_width*0.2, 
+            y=cls._report_height*classification_images_y_offset, 
+            width=5*cm, 
+            height=7*cm)
+        cls._report.drawImage(
+            image=cls._image_paths[5], 
+            x=cls._report_width*0.55, 
+            y=cls._report_height*classification_images_y_offset, 
+            width=5*cm, 
+            height=7*cm)
+        cls._insert_text(
+            x_coord=1.1, 
+            y_coord=8.1 if cls._history else 8.0, 
+            text_line=(
+                "[Left] Oringal image, size: {} (height, width, channels) "
+                "pixels."
+            ).format(cls._original_image.shape))
+        cls._insert_text(
+            x_coord=0.3, 
+            y_coord=0.25, 
+            text_line=(
+                "[Right] Test image, size: {} (height, width, channels) "
+                "pixels."
+            ).format(cls._testX_image.shape))
+        
+        recomendations_file = open(
+            "{}".format(cls._defects_recomendations[str(cls._testY_label)]), 
+            "r")
+        
+        cls._insert_text(
+            x_coord=-1.9, 
+            y_coord=0.5, 
+            font_type="Arial-Bold", 
+            text_line="· Recomendations:")
+        match cls._testY_label:
+            case 4:
+                cls._insert_text(
+                    x_coord=0.5, 
+                    y_coord=0.25, 
+                    text_line="No defects found")
+            case _:
+                for line in recomendations_file.readlines():
+                    line = line.strip().replace("\n", "")
+                    if cls._textobject.getY() >= cls._report_height - (2*cm):
+                        cls._draw_text_and_reset_page(True)
+                        if line.startswith("--"):
+                            cls._insert_text(
+                                x_coord=3.0, 
+                                y_coord=2.0, 
+                                text_line=line[2:])
+                            cls._textobject.moveCursor(-0.5*cm, 0.0)
+                        elif line.startswith("-"):
+                            cls._insert_text(
+                                x_coord=3.0, 
+                                y_coord=2.0, 
+                                text_line=line)
+                            cls._textobject.moveCursor(-0.5*cm, 0.0)
+                        else:
+                            cls._insert_text(
+                                x_coord=4.0, 
+                                y_coord=2.0, 
+                                text_line=line)
+                            cls._textobject.moveCursor(-1.0*cm, 0.0)
+                    else:
+                        if line.startswith("--"):
+                            cls._insert_text(
+                                x_coord=0.5, 
+                                y_coord=0.25, 
+                                text_line=line[2:])
+                            cls._textobject.moveCursor(-0.5*cm, 0.0)
+                        elif line.startswith("-"):
+                            cls._insert_text(
+                                x_coord=0.5, 
+                                y_coord=0.25, 
+                                text_line=line)
+                            cls._textobject.moveCursor(-0.5*cm, 0.0)
+                        else:
+                            cls._insert_text(
+                                x_coord=1.0, 
+                                y_coord=0.25, 
+                                text_line=line)
+                            cls._textobject.moveCursor(-1.0*cm, 0.0)
         
     @classmethod
     def _insert_areas_calculations_data(cls) -> None:
@@ -628,9 +949,17 @@ class Load(object):
         """Method to delete the process images
         """
         
+        # Remove images
         for image_path in cls._image_paths:
             if os.path.exists(image_path): 
                 os.remove(image_path)
+        
+        # Remove plot image
+        plot_path = (os.path.dirname(os.getcwd()) 
+                     + OUTPUT_DIRECTORY_PATH 
+                     + PLOT_NAME)
+        if os.path.exists(plot_path): 
+                os.remove(plot_path)
     
     @classmethod
     def _check_output_directory(cls) -> None:

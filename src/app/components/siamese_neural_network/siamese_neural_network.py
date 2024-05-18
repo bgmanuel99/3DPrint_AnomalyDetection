@@ -2,9 +2,12 @@ import os
 import cv2
 import h5py
 import keras
+import random
 import imutils
 import numpy as np
+import tensorflow as tf
 import matplotlib.pyplot as plt
+import tf_keras.api._v2.keras.backend as K
 from imutils import build_montages
 from keras.api.models import Model
 from keras.api.layers import (
@@ -15,23 +18,71 @@ from keras.api.layers import (
     GlobalAveragePooling2D, 
     MaxPooling2D, 
     Lambda)
-from keras.api.optimizers import Adam
-import tf_keras.api._v2.keras.backend as K
-from keras.api.datasets import mnist
-import tensorflow as tf
-import random
-from app.common.common_prints import CommonPrints
+from keras.src.callbacks.history import History
+from tensorflow.python.framework.ops import SymbolicTensor
 
 from app.utils.constants.constants import *
 
 class SiameseNeuralNetwork(object):
+    """Class containing the methods to create, train and predict with a 
+    siamese neural network
+
+    Methods:
+        construct_and_train_siamese_neural_network (
+                trainX: np.ndarray, 
+                trainY: np.ndarray, 
+                testX: np.ndarray, 
+                testY: np.ndarray):
+            Method to construct and train the siamese neural network
+        predict (
+                model: Model, 
+                original_image: np.ndarray, 
+                testX: np.ndarray):
+            Method to predict defects with the trained siamese neural network
+        make_pairs_for_training (
+                images: np.ndarray, 
+                labels: np.ndarray):
+            Method to create image pairs for training the siamese neural 
+            network
+        build_siamese_architecture (
+                inputShape, 
+                embeddingDim=48):
+            Method to create the siamese neural network architecture
+        euclidean_distance(vectors: List[SymbolicTensor]):
+            Method to calculate the euclidian distance between two vectors
+        build_montage (
+                pairTrain: np.ndarray, 
+                labelTrain: np.ndarray):
+            Method to create and show a montage of the pairs of images that 
+            trains the siamese neural network
+        plot_training (history: History):
+            Method to save the history of the trained model
+    """
     
     @staticmethod
     def construct_and_train_siamese_neural_network(
-            trainX, 
-            trainY, 
-            testX, 
-            testY):
+            trainX: np.ndarray, 
+            trainY: np.ndarray, 
+            testX: np.ndarray, 
+            testY: np.ndarray) -> tuple[Model, History, int, int]:
+        """Method to construct and train the siamese neural network
+
+        Parameters:
+            trainX (np.ndarray): Train images
+            trainY (np.ndarray): Train labels
+            testX (np.ndarray): Test images
+            testY (np.ndarray): Test labels
+
+        Returns:
+            tuple[Model, History, int, int]: 
+                - Model of the siamese neural network
+                - History of the trained neural network
+                - Lenght of the train pair images
+                - Lenght of the test pair images
+        """
+        
+        print("[INFO] Siamese neural network process")
+        
         np.random.seed(0)
         tf.random.set_seed(2)
         random.seed(3)
@@ -39,27 +90,27 @@ class SiameseNeuralNetwork(object):
         trainX = trainX / 255.0
         testX = testX / 255.0
         
-        print("[INFO] preparing positive and negative pairs...")
-        (pair_train, label_train) = SiameseNeuralNetwork.make_pairs_for_training(
-            trainX, trainY)
-        print(len(pair_train))
+        print("Preparing positive and negative pairs...")
+        (pair_train, label_train) = SiameseNeuralNetwork \
+            .make_pairs_for_training(trainX, trainY)
         (pair_test, label_test) = SiameseNeuralNetwork.make_pairs_for_training(
             testX, testY)
-        print(len(pair_test))
         
-        print("[INFO] Building siamese network...")
+        print("Building siamese network...")
         imgA = Input(shape=IMAGE_SHAPE)
         imgB = Input(shape=IMAGE_SHAPE)
-        featureExtractor = SiameseNeuralNetwork.build_siamese_architecture(IMAGE_SHAPE)
+        featureExtractor = SiameseNeuralNetwork.build_siamese_architecture(
+            IMAGE_SHAPE)
         featsA = featureExtractor(imgA)
         featsB = featureExtractor(imgB)
         
         # Construct the siamese network
-        distance = Lambda(SiameseNeuralNetwork.euclidean_distance)([featsA, featsB])
+        distance = Lambda(SiameseNeuralNetwork.euclidean_distance)(
+            [featsA, featsB])
         outputs = Dense(1, activation="sigmoid")(distance)
         model = Model(inputs=[imgA, imgB], outputs=outputs)
         
-        print("[INFO] Compiling model...")
+        print("Compiling model...")
         model.compile(
             loss="binary_crossentropy", 
             optimizer="adam",
@@ -67,7 +118,7 @@ class SiameseNeuralNetwork(object):
         
         model.summary()
         
-        print("[INFO] Training model...")
+        print("Training model...")
         history = model.fit(
             [pair_train[:, 0], pair_train[:, 1]], label_train[:],
             validation_data=(
@@ -77,12 +128,12 @@ class SiameseNeuralNetwork(object):
             shuffle=False)
         
         # Serialize the model to disk
-        print("[INFO] Saving siamese model...")
+        print("Saving siamese model...")
         model.save(os.path.dirname(os.getcwd()) 
                    + MODEL_PATH 
                    + MODEL_NAME)
         
-        print("[INFO] plotting training history...")
+        print("plotting training history...")
         SiameseNeuralNetwork.plot_training(history)
         
         return model, history, len(pair_train), len(pair_test)
@@ -92,6 +143,23 @@ class SiameseNeuralNetwork(object):
             model: Model, 
             original_image: np.ndarray, 
             testX: np.ndarray) -> tuple[float, int]:
+        """Method to predict defects with the trained siamese neural network
+
+        Parameters:
+            model (Model): Model of the siamese neural network
+            original_image (np.ndarray): 
+                Original image with the 3d printed and reference objects
+            testX (np.ndarray): 
+                Test images
+
+        Returns:
+            tuple[float, int]: 
+                - Max probability for the predictions
+                - Index for the test image with max probability
+        """
+        
+        print("[INFO] Making predictions")
+        
         max_probability = 0.0
         max_probability_index = 0
         
@@ -104,7 +172,9 @@ class SiameseNeuralNetwork(object):
         
         for index in range(len(testX)):
             test_image = np.expand_dims(testX[index], axis=0)
-            preds = model.predict([original_image, test_image])
+            preds = model.predict(
+                [original_image, test_image], 
+                verbose=0)
             probability = preds[0][0]
             
             if probability > max_probability:
@@ -117,6 +187,19 @@ class SiameseNeuralNetwork(object):
     def make_pairs_for_training(
             images: np.ndarray, 
             labels: np.ndarray) -> tuple[np.ndarray, np.ndarray]:
+        """Method to create image pairs for training the siamese neural 
+        network
+
+        Parameters:
+            images (np.ndarray): Images to make the pairs
+            labels (np.ndarray): Labels associated with the images
+
+        Returns:
+            tuple[np.ndarray, np.ndarray]: 
+                - Pairs of images
+                - Pairs of labels
+        """
+        
         pairImages = []
         pairLabels = []
         
@@ -159,7 +242,17 @@ class SiameseNeuralNetwork(object):
     @staticmethod
     def build_siamese_architecture(
             inputShape, 
-            embeddingDim=48):
+            embeddingDim=48) -> Model:
+        """Method to create the siamese neural network architecture
+
+        Parameters:
+            inputShape (_type_): Input shape of the images of the network
+            embeddingDim (int, optional): Output vector. Defaults to 48.
+
+        Returns:
+            Model: Model of the siamese neural network
+        """
+        
         # Specify the inputs for the feature extractor network
         inputs = Input(inputShape)
         
@@ -187,21 +280,39 @@ class SiameseNeuralNetwork(object):
     
     @staticmethod
     @keras.saving.register_keras_serializable()
-    def euclidean_distance(vectors):
+    def euclidean_distance(vectors: List[SymbolicTensor]) -> SymbolicTensor:
+        """Method to calculate the euclidian distance between two vectors
+
+        Parameters:
+            vectors (List[SymbolicTensor]): 
+                Output vectors of the siamese neural network
+
+        Returns:
+            SymbolicTensor: Euclidian distance between vectors
+        """
+        
         # Unpack the vectors into separate lists
         (featsA, featsB) = vectors
         
         # Compute the sum of squared distances between the vectors
-        sumSquared = K.sum(K.square(featsA - featsB), axis=1,
+        sum_squared = K.sum(K.square(featsA - featsB), axis=1,
             keepdims=True)
         
         # Return the euclidean distance between the vectors
-        return K.sqrt(K.maximum(sumSquared, K.epsilon()))
+        return K.sqrt(K.maximum(sum_squared, K.epsilon()))
         
     @staticmethod
     def build_montage(
             pairTrain: np.ndarray, 
             labelTrain: np.ndarray) -> None:
+        """Method to create and show a montage of the pairs of images that 
+        trains the siamese neural network
+
+        Parameters:
+            pairTrain (np.ndarray): Pairs of train images
+            labelTrain (np.ndarray): Pairs of labels of train images
+        """
+        
         images = []
         
         # Loop over a sample of our training pairs
@@ -243,11 +354,11 @@ class SiameseNeuralNetwork(object):
         cv2.waitKey(0)
         
     @staticmethod
-    def plot_training(history) -> None:
+    def plot_training(history: History) -> None:
         """Method to save the history of the trained model
 
         Parameters:
-            history (_type_): History of the trained model
+            history (History): History of the trained model
         """
         
         plt.style.use("ggplot")

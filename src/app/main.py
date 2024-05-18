@@ -86,6 +86,7 @@ if __name__ == "__main__":
                 
     match execution_type:
         case "anomaly_detection":
+            print("[INFO] Init process")
             AnomalyDetection.anomaly_detection(
                 gcode_name=gcode_name, 
                 image_name=image_name, 

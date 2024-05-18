@@ -76,6 +76,8 @@ class ImageGenerator(object):
                 List with the perfect models of the 3d printed object
         """
         
+        print("[INFO] Creating perfect models")
+        
         # List of perfect models
         perfect_models = []
         

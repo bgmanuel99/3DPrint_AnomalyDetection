@@ -84,6 +84,8 @@ class GCodeAnalizer(object):
             List[List[object]]: Real coordinates of the 3d printed object
         """
         
+        print("[INFO] Extracting Gcode data")
+        
         cls._extract_structured_data(gcode_file)
         
         cls._calculate_extrusion_relative_distances()

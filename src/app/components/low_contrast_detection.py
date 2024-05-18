@@ -12,7 +12,7 @@ class LowContrastDetection(object):
     """This class contains the algorithms to detect low contrast images.
     
     Methods:
-        low_contrast_dectection (image: numpy.ndarray):
+        low_contrast_detection (image: numpy.ndarray):
             Method to determines if an image is low contrast.
             
     Raises:
@@ -22,7 +22,7 @@ class LowContrastDetection(object):
     """
     
     @classmethod
-    def low_contrast_dectection(cls, image: numpy.ndarray):
+    def low_contrast_detection(cls, image: numpy.ndarray):
         """Method to determines if an image is low contrast.
 
         Parameters:
@@ -33,6 +33,8 @@ class LowContrastDetection(object):
                 Raised when an image is low contrast and cannot be used in the 
                 pipeline
         """
+        
+        print("[INFO] Low contrast process")
         
         try:
             image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)

@@ -1,0 +1,3 @@
+- Increase extrusion temperature
+- Excessive printing speed
+- Check that the extruder is not clogged

@@ -1,0 +1,15 @@
+- The print platform is not level.
+- The Z-offset between the print platform and the extruder has not been correctly
+--adjusted and it's too high.
+- The layer prints too fast.
+- The temperature or cooling setting is not correct.
+- The printing platform:
+Plastics adhere differently to each material.
+Different surfaces can be used for extrusion materials.
+BuildTak for PLA or a treated glass heated surface for ABS.
+- Brims and Rafts:
+Your piece may be small and not have enough contact surface.
+You can try using 'BRIM' generating material perimeters around
+the basis of the original design.
+Or use 'RAFT' to create a horizontal lattice between the base of the 3D 
+printer and the part.

@@ -1,0 +1,6 @@
+- May be repetitively stopping and restarting the extrusion process
+--on each movement:
+It may be altering the flow rate of the extruded material.
+- Review retraction configuration and perimeters.
+- Avoid unnecessary retractions.
+- Choose the location of the printing start point.

@@ -70,6 +70,8 @@ class AreaCalculation(object):
                 in millimeters squared
         """
 
+        print("[INFO] Calculating internal areas")
+
         cnts = cls._find_and_sort_contours(perfect_model_3d_object)
         
         infill_contours_image = cls._draw_and_enumerate_contours(

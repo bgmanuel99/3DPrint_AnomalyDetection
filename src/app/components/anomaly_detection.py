@@ -174,7 +174,7 @@ class AnomalyDetection(object):
             history = None
 
         # Detect low contrast images
-        LowContrastDetection.low_contrast_dectection(image)
+        LowContrastDetection.low_contrast_detection(image)
 
         # Image segmentation
         (masked_3d_object, 
@@ -184,10 +184,6 @@ class AnomalyDetection(object):
          reference_object_pixels_area, 
          ssim_max_score_reference_object) = ImageSegmetation.segment_image(
             image)
-        
-        # Defect classification
-        (max_probability, max_probability_index) = SiameseNeuralNetwork \
-            .predict(model, image, testX)
            
         # Analize gcode file and extract data
         coords: List[List[object]] = GCodeAnalizer.extract_data(gcode_file)
@@ -209,6 +205,10 @@ class AnomalyDetection(object):
          impresion_defects_total_diff, 
          segmentation_defects_total_diff) = DefectsDetection.detect_defects(
             masked_3d_object, perfect_models)
+         
+        # Defect classification
+        (max_probability, max_probability_index) = SiameseNeuralNetwork \
+            .predict(model, image, testX)
          
         # Internal contours area calculation
         infill_contours_image, infill_areas = AreaCalculation.calculate_areas(
@@ -249,5 +249,6 @@ class AnomalyDetection(object):
             history, 
             max_probability, 
             testX[max_probability_index], 
+            testY[max_probability_index], 
             # Extra data
             metadata_file)

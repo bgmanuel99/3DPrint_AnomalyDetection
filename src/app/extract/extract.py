@@ -189,7 +189,7 @@ class Extract(object):
                     None, 
                     None, 
                     np.ndarray, 
-                    None, 
+                    np.ndarray, 
                     Model]
                 | tuple[
                     io.TextIOWrapper, 
@@ -198,7 +198,7 @@ class Extract(object):
                     None, 
                     None, 
                     np.ndarray, 
-                    None, 
+                    np.ndarray, 
                     Model]):
         """Method to extract process data.
 
@@ -239,7 +239,7 @@ class Extract(object):
                     None, 
                     None, 
                     np.ndarray, 
-                    None, 
+                    np.ndarray, 
                     Model]
                 | tuple[
                     io.TextIOWrapper, 
@@ -248,7 +248,7 @@ class Extract(object):
                     None, 
                     None, 
                     np.ndarray, 
-                    None, 
+                    np.ndarray, 
                     Model]
             ):
                 Gcode file, image, metadata file, trainX, trainY, testX,  
@@ -258,6 +258,8 @@ class Extract(object):
                 training data if not it will return a pretrained model 
                 specified by the user and the testX data for predictions
         """
+        
+        print("[INFO] Extracting process data")
         
         gcode_path: str = "{}{}{}{}".format(
             os.path.dirname(os.getcwd()), 
@@ -298,15 +300,15 @@ class Extract(object):
                            + FATHER_CLASSIFICATION_DIRECTORY_PATH 
                            + TRAIN_LABELS_DIRECTORY
                            + TRAIN_LABELS_FILE_NAME)
-            
-            testY_path = (os.path.dirname(os.getcwd()) 
-                            + FATHER_CLASSIFICATION_DIRECTORY_PATH 
-                            + TEST_LABELS_DIRECTORY
-                            + TEST_LABELS_FILE_NAME)
         
         testX_path = (os.path.dirname(os.getcwd()) 
                       + FATHER_CLASSIFICATION_DIRECTORY_PATH 
                       + TEST_IMAGES_DIRECTORY)
+
+        testY_path = (os.path.dirname(os.getcwd()) 
+                      + FATHER_CLASSIFICATION_DIRECTORY_PATH 
+                      + TEST_LABELS_DIRECTORY
+                      + TEST_LABELS_FILE_NAME)
             
         # Check if directories exists
         cls._check_directories()
@@ -328,19 +330,16 @@ class Extract(object):
             # Check if train labels data exists and have the right format
             cls._check_classification_labels_data(trainY_path)
             
-            # Check if test labels data exists and have the right format
-            cls._check_classification_labels_data(testY_path)
-            
         # Check if test images data exists and have the right format
         test_images_list = cls._check_classification_images_data(
             testX_path)
         
+        # Check if test labels data exists and have the right format
+        cls._check_classification_labels_data(testY_path)
+        
         # Extract input data
         (gcode_file, image, metadata_file) = cls._extract_input_data(
             gcode_path, image_path, metadata_name, metadata_path)
-        
-        testX = cls._extract_classification_images_data(
-            testX_path, test_images_list)
         
         if train_neural_network:
             # Extract siamese neural network data
@@ -349,8 +348,10 @@ class Extract(object):
             trainY = cls._check_and_extract_classification_labels_data(
                 len(trainX), trainY_path)
             
-            testY = cls._check_and_extract_classification_labels_data(
-                len(testX),  testY_path)
+        testX = cls._extract_classification_images_data(
+            testX_path, test_images_list)
+        testY = cls._check_and_extract_classification_labels_data(
+            len(testX),  testY_path)
         
         if train_neural_network:
             return (
@@ -370,7 +371,7 @@ class Extract(object):
                 None, 
                 None, 
                 testX, 
-                None, 
+                testY, 
                 model)
             
     @classmethod

@@ -64,6 +64,8 @@ class DefectsDetection(object):
                 - The segmentation defects error based on SSIM score
         """
         
+        print("[INFO] Detecting defects")
+        
         CommonPrints.print_image(
             "masked_3d_object", masked_3d_object, 600)
         

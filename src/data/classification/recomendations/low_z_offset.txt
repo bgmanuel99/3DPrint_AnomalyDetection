@@ -1,0 +1,14 @@
+- The print platform is not level.
+- The Z-offset between the print platform and the extruder has not been correctly 
+--adjusted and it's too low.
+- The diameter of the extruder may be affecting the Z-offset:
+Extruders with larger diameters may require a larger Z-offset
+due to the greater extrusion of material, while smaller ones may
+require a smaller value.
+- Different types of materials influence the Z-offset calibration:
+Variable diameters of materials can affect the volume of
+extrusion of the molten material.
+- Hardware problems:
+It may have mechanical problems that affect the accuracy of the Z-offset.
+Check for loose, misaligned or aged components that may affect
+to the printing precision of the printer.

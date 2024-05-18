@@ -79,6 +79,8 @@ class ImageSegmetation(object):
                 object and its perfect models
         """
         
+        print("[INFO] Segmenting images")
+        
         # Segment the original image
         segmented: np.ndarray = cls._get_complete_segmented_image(image)
         
