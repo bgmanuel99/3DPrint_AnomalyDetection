@@ -187,4 +187,29 @@ class CommonFunctionalities(object):
                 ssim_max_score = ssim_score
                 ssim_max_score_index = i
         
+        # (score, diff) = structural_similarity(
+        #     perfect_models[ssim_max_score_index], segmented_object, full=True)
+        # diff = (diff * 255).astype("uint8")
+        # print("SSIM: {}".format(score))
+        
+        # thresh = cv2.threshold(diff, 0, 255,
+        #     cv2.THRESH_BINARY_INV | cv2.THRESH_OTSU)[1]
+        # cnts = cv2.findContours(thresh.copy(), cv2.RETR_EXTERNAL,
+        #     cv2.CHAIN_APPROX_SIMPLE)
+        # cnts = imutils.grab_contours(cnts)
+        
+        # for c in cnts:
+        #     # compute the bounding box of the contour and then draw the
+        #     # bounding box on both input images to represent where the two
+        #     # images differ
+        #     (x, y, w, h) = cv2.boundingRect(c)
+        #     cv2.rectangle(perfect_models[ssim_max_score_index], (x, y), (x + w, y + h), (0, 0, 255), 2)
+        #     cv2.rectangle(segmented_object, (x, y), (x + w, y + h), (0, 0, 255), 2)
+        # # show the output images
+        # cv2.imshow("Original", perfect_models[ssim_max_score_index])
+        # cv2.imshow("Modified", segmented_object)
+        # cv2.imshow("Diff", diff)
+        # cv2.imshow("Thresh", thresh)
+        # cv2.waitKey(0)
+        
         return ssim_max_score, ssim_max_score_index

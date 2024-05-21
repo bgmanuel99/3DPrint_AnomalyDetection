@@ -95,7 +95,8 @@ class SiameseNeuralNetwork(object):
             .make_pairs_for_training(trainX, trainY)
         (pair_test, label_test) = SiameseNeuralNetwork.make_pairs_for_training(
             testX, testY)
-        
+        print(len(pair_train))
+        print(len(pair_test))
         print("Building siamese network...")
         imgA = Input(shape=IMAGE_SHAPE)
         imgB = Input(shape=IMAGE_SHAPE)

@@ -145,6 +145,9 @@ class ImageSegmetation(object):
         masked_3d_object = cls._get_masked_object_by_contour(
             image, cnt, segmented)
         
+        CommonPrints.print_image(
+            "masked_3d_object", masked_3d_object, 600, True)
+        
         # Calculate 3d printed object box coordinates
         printed_object_box_coordinates = CommonFunctionalities \
             .get_box_coordinates(cnt)
@@ -194,6 +197,9 @@ class ImageSegmetation(object):
         masked_reference_object = cls._get_masked_object_by_contour(
             image, cnt, segmented)
         
+        CommonPrints.print_image(
+            "masked_reference_object", masked_reference_object, 600, True)
+        
         # Calculate reference object box coordinates
         reference_object_box_coordinates = CommonFunctionalities \
             .get_box_coordinates(cnt)
@@ -211,6 +217,11 @@ class ImageSegmetation(object):
                 top_left_coord_reference_object, 
                 reference_object_box_coordinates, 
                 False)
+            
+        CommonPrints.print_image(
+            "translated_reference_object", 
+            translated_reference_object, 
+            600)
         
         # Segment the translated object and obtain its contour
         segmented_reference_object = CommonFunctionalities.get_segmented_image(
@@ -244,7 +255,7 @@ class ImageSegmetation(object):
         # degree offsets when taking the picture of the original image
         ppm_degree_offset = []
         
-        for offset in [i * 0.1 for i in range(-30, 31)]:
+        for offset in [i * 0.1 for i in range(-80, 81)]:
             ppm_degree_offset.append(reference_object_width + offset)
         
         # Obtain reference object perfect models
@@ -349,7 +360,7 @@ class ImageSegmetation(object):
         # image
         masked = cv2.bitwise_and(image, image, mask=filled_contour)
         
-        CommonPrints.print_image("masked", masked, 600)
+        CommonPrints.print_image("masked", masked, 600, True)
         
         # This second bitwise operation is to separate the forground from the 
         # background
