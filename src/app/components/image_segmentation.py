@@ -84,16 +84,24 @@ class ImageSegmetation(object):
         # Segment the original image
         segmented: np.ndarray = cls._get_complete_segmented_image(image)
         
-        CommonPrints.print_image("segmented", segmented, 600)
+        CommonPrints.print_image("segmented", segmented, 600, True)
         
         # Obtain the contours of the object in the image
         cnts = cls._get_contours(segmented)
+        
+        contours_image = np.zeros(image.shape, dtype=np.uint8)
+        for c in cnts:
+            cv2.drawContours(contours_image, [c], -1, (255, 255, 255), 1)
+        CommonPrints.print_image("contours_image", contours_image, 600, True)
         
         # 3D printed object process
         (translated_3d_object, 
          middle_coords_3d_object, 
          top_left_coord_3d_object) = cls._3d_printed_object_process(
             image, cnts[1], segmented)
+        
+        CommonPrints.print_image(
+            "translated_3d_object", translated_3d_object, 600, True)
         
         # Reference object process
         (reference_object_pixels_area, 

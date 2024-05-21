@@ -16,6 +16,7 @@ from app.components.defects_detection import DefectsDetection
 from app.components.image_segmentation import ImageSegmetation
 from app.components.low_contrast_detection import LowContrastDetection
 from app.load.load import Load
+from app.common.common_prints import CommonPrints
 
 class AnomalyDetection(object):
     """Class containing the main algorithm to detect anomalies in 3d printed 
@@ -160,6 +161,9 @@ class AnomalyDetection(object):
             metadata_name, 
             train_neural_network, 
             pretrained_model_name)
+        
+        # Detect low contrast images
+        equalized = LowContrastDetection.low_contrast_detection(image)
          
         if train_neural_network:
             (model, 
@@ -173,9 +177,6 @@ class AnomalyDetection(object):
             pair_test_len = None
             history = None
 
-        # Detect low contrast images
-        LowContrastDetection.low_contrast_detection(image)
-
         # Image segmentation
         (masked_3d_object, 
          ppm_degree_offset, 
@@ -183,11 +184,11 @@ class AnomalyDetection(object):
          top_left_coord_3d_object, 
          reference_object_pixels_area, 
          ssim_max_score_reference_object) = ImageSegmetation.segment_image(
-            image)
+            image if equalized is None else equalized)
            
         # Analize gcode file and extract data
         coords: List[List[object]] = GCodeAnalizer.extract_data(gcode_file)
-
+        
         # Create perfect printed models based on gcode information and pixels 
         # per metric values
         perfect_models = ImageGenerator.generate_images(

@@ -133,13 +133,7 @@ class Load(object):
               + BAD_MATERIAL_ADHESION_FILE_NAME), 
         "1": (os.path.dirname(os.getcwd()) 
               + RECOMENDATIONS_PATH 
-              + LOW_Z_OFFSET_FILE_NAME), 
-        "2": (os.path.dirname(os.getcwd()) 
-              + RECOMENDATIONS_PATH 
-              + STAINS_FILE_NAME), 
-        "3": (os.path.dirname(os.getcwd()) 
-              + RECOMENDATIONS_PATH 
-              + STRAND_WEAR_FILE_NAME)}
+              + LOW_Z_OFFSET_FILE_NAME)}
     
     @classmethod
     def load_data(
@@ -269,30 +263,33 @@ class Load(object):
         # Check if output directory exists
         cls._check_output_directory()
         
-        siamese_model_plot = cv2.imread("{}".format(
-            (os.path.dirname(os.getcwd()) 
-             + OUTPUT_DIRECTORY_PATH 
-             + PLOT_NAME)))
+        images_for_load = [["original_image", 
+          "perfect_model", 
+          "masked_3d_object", 
+          "masked_3d_object_with_defects", 
+          "infill_contours_image", 
+          "testX_image"], 
+          # Flip the images vertically so when they are draw in the report 
+          # they stay in the correct position as the report will draw them
+          # upside down
+         [cv2.flip(original_image, 0), 
+          cv2.flip(perfect_model, 0), 
+          cv2.flip(masked_3d_object, 0), 
+          cv2.flip(masked_3d_object_with_defects, 0), 
+          cv2.flip(infill_contours_image, 0), 
+          cv2.flip(testX_image, 0)]]
+        
+        if cls._history:
+            siamese_model_plot = cv2.imread("{}".format(
+                (os.path.dirname(os.getcwd()) 
+                + OUTPUT_DIRECTORY_PATH 
+                + PLOT_NAME)))
+            
+            images_for_load[0].append("reverse_siamese_model_plot")
+            images_for_load[1].append(cv2.flip(siamese_model_plot, 0))
         
         # Load the resultant images to the output folder
-        cls._image_paths = cls._load_images((
-            ("original_image", 
-             "perfect_model", 
-             "masked_3d_object", 
-             "masked_3d_object_with_defects", 
-             "infill_contours_image", 
-             "testX_image", 
-             "reverse_siamese_model_plot"), 
-            # Flip the images vertically so when they are draw in the report 
-            # they stay in the correct position as the report will draw them
-            # upside down
-            (cv2.flip(original_image, 0), 
-             cv2.flip(perfect_model, 0), 
-             cv2.flip(masked_3d_object, 0), 
-             cv2.flip(masked_3d_object_with_defects, 0), 
-             cv2.flip(infill_contours_image, 0), 
-             cv2.flip(testX_image, 0), 
-             cv2.flip(siamese_model_plot, 0))))
+        cls._image_paths = cls._load_images(images_for_load)
         
         try:
             # Create pdf report

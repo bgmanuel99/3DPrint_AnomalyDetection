@@ -68,7 +68,10 @@ class CommonFunctionalities(object):
         # Convert the image to grayscale and blur it slightly
         # Blurring the image helps remove some of the high frequency edges 
         # in the image and allow a more clean segmentation
-        gray_image = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+        if image.shape[2] == 1:
+            gray_image = image
+        else:
+            gray_image = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
         blurred_image = cv2.GaussianBlur(gray_image, (7, 7), 0)
         
         segmented_image = cv2.threshold(

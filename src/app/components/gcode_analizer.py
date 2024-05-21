@@ -175,7 +175,8 @@ class GCodeAnalizer(object):
                         # If the next coord for the actual one is the 
                         # initial coord then use the retract length to 
                         # calculate relative distance
-                        if perimeter[1][i-1][2] == 0.0:
+                        if (perimeter[1][i-1][2] == 0.0
+                            or perimeter[1][i-1][2] > perimeter[1][i][2]):
                             if perimeter[1][i][2] > cls._retract_length: 
                                 perimeter[1][i][2] = round(perimeter[1][i][2] 
                                                         - cls._retract_length,

@@ -7,6 +7,7 @@ from imutils import perspective
 
 from app.utils.constants.constants import *
 from app.common.common_functionalities import CommonFunctionalities
+from app.common.common_prints import CommonPrints
 
 class ImageGenerator(object):
     """This class contains methods to create the image of the perfect model 
@@ -100,7 +101,6 @@ class ImageGenerator(object):
                 
                 if actual_max_strand_width > max_strand_width:
                     max_strand_width = actual_max_strand_width
-                
                 for perimeter in transformed_layer[2]:
                     for i in range(len(perimeter[1]) - 1):
                         cv2.line(
