@@ -163,7 +163,7 @@ class AnomalyDetection(object):
             pretrained_model_name)
         
         # Detect low contrast images
-        equalized = LowContrastDetection.low_contrast_detection(image)
+        image = LowContrastDetection.low_contrast_detection(image)
          
         if train_neural_network:
             (model, 
@@ -184,7 +184,7 @@ class AnomalyDetection(object):
          top_left_coord_3d_object, 
          reference_object_pixels_area, 
          ssim_max_score_reference_object) = ImageSegmetation.segment_image(
-            image if equalized is None else equalized)
+            image)
            
         # Analize gcode file and extract data
         coords: List[List[object]] = GCodeAnalizer.extract_data(gcode_file)

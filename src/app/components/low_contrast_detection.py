@@ -5,7 +5,7 @@ from skimage.exposure import is_low_contrast
 from app.utils.constants.constants import *
 
 class LowContrastDetection(object):
-    """This class contains the algorithms to detect low contrast images.
+    """This class contains the algorithm to detect low contrast images.
     
     Methods:
         low_contrast_detection (image: numpy.ndarray):
@@ -19,7 +19,7 @@ class LowContrastDetection(object):
     
     @classmethod
     def low_contrast_detection(cls, image: np.ndarray) -> np.ndarray | None:
-        """Method to determines if an image is low contrast and for the 
+        """Method which determines if an image is low contrast and for the 
         adaptive histogram equalization in the case it is.
 
         Parameters:
@@ -38,4 +38,4 @@ class LowContrastDetection(object):
             clahe = cv2.createCLAHE(clipLimit=2.0, tileGridSize=(8, 8))
             return clahe.apply(gray)
         else: 
-            return None
+            return image
