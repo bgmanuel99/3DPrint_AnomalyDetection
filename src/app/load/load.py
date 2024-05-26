@@ -37,8 +37,6 @@ class Load(object):
                 # Scores and errors
                 ssim_max_score: float, 
                 pixels_per_metric: float, 
-                impresion_defects_total_diff: float, 
-                segmentation_defects_total_diff: float, 
                 # Images and data for areas
                 infill_contours_image: np.ndarray, 
                 infill_areas: List[List[object]], 
@@ -107,8 +105,6 @@ class Load(object):
     _original_image: np.ndarray = None
     _ssim_max_score: float = None
     _pixels_per_metric: float = None
-    _impresion_defects_total_diff: float = None
-    _segmentation_defect_total_diff: float = None
     _infill_areas: List[List[object]] = None
     _ssim_max_score_reference_object: float = None
     _trainX: np.ndarray | None = None
@@ -151,8 +147,6 @@ class Load(object):
             # Scores and errors
             ssim_max_score: float, 
             pixels_per_metric: float, 
-            impresion_defects_total_diff: float, 
-            segmentation_defects_total_diff: float, 
             # Images and data for areas
             infill_contours_image: np.ndarray, 
             infill_areas: List[List[object]], 
@@ -192,10 +186,6 @@ class Load(object):
             pixels_per_metric (float): 
                 Value of pixels per metric used to create the the perfect 
                 model with the max SSIM score
-            impresion_defects_total_diff (float): 
-                Total impresion error in the defect detection
-            segmentation_defects_total_diff (float): 
-                Total segmentation error in the defect detection
             infill_contours_image (np.ndarray): 
                 Image with the enumerated internal areas of the 3d printed 
                 object
@@ -243,8 +233,6 @@ class Load(object):
         cls._original_image = original_image
         cls._ssim_max_score = ssim_max_score
         cls._pixels_per_metric = pixels_per_metric
-        cls._impresion_defects_total_diff = impresion_defects_total_diff
-        cls._segmentation_defect_total_diff = segmentation_defects_total_diff
         cls._infill_areas = infill_areas
         cls._ssim_max_score_reference_object = ssim_max_score_reference_object
         cls._trainX = trainX
@@ -298,7 +286,7 @@ class Load(object):
             cls._delete_loaded_images()
             CommonPrints.system_out(e)
         finally:
-            # Delete the resultant images from the output folder after # 
+            # Delete the resultant images from the output folder after
             # inserting them in the report pdf
             cls._delete_loaded_images()
         
@@ -447,8 +435,8 @@ class Load(object):
                     cls._insert_text(y_coord=0.25, text_line=line)
         else:
             cls._insert_text(
+                x_coord=0.5, 
                 y_coord=0.25, 
-                font_type="Arial-Bold", 
                 text_line="No input metadata was inserted")
             
     @classmethod
@@ -485,7 +473,7 @@ class Load(object):
         cls._insert_text(
             x_coord=0.5, 
             y_coord=0.25,
-            text_line="{:.3E} %".format(Decimal(cls._ssim_max_score)))
+            text_line="{:.3E}".format(Decimal(cls._ssim_max_score)))
         
         # Impresion error
         cls._insert_text(
@@ -496,20 +484,8 @@ class Load(object):
         cls._insert_text(
             x_coord=0.5, 
             y_coord=0.25,
-            text_line="{:.3E} %".format(
-                Decimal(cls._impresion_defects_total_diff)))
-        
-        # Segmentation error
-        cls._insert_text(
-            x_coord=-0.5, 
-            y_coord=0.5, 
-            font_type="Arial-Bold", 
-            text_line="· Segmentation total error:")
-        cls._insert_text(
-            x_coord=0.5, 
-            y_coord=0.25,
-            text_line="{:.3E} %".format(
-                Decimal(cls._segmentation_defect_total_diff)))
+            text_line="{:.3E}".format(
+                Decimal(1- cls._ssim_max_score)))
         
         # Original image
         cls._report.drawImage(
@@ -520,7 +496,7 @@ class Load(object):
             height=7*cm)
         cls._insert_text(
             x_coord=1.8, 
-            y_coord=8.0, 
+            y_coord=9.6, 
             text_line=(
                 "Original image, size: {} (height, width, channels) pixels."
             ).format(cls._original_image.shape))
@@ -656,16 +632,16 @@ class Load(object):
             cls._insert_text(
                 x_coord=0.5, 
                 y_coord=0.25,
-                text_line="- Accuracy: {:.3E} %".format(
-                    Decimal(cls._history.history["accuracy"][-1])))
+                text_line="- Accuracy: {} %".format(
+                    round(cls._history.history["accuracy"][-1] * 100, 4)))
             cls._insert_text(
                 y_coord=0.25,
                 text_line="- Loss: {:.3E}".format(
                     Decimal(cls._history.history["loss"][-1])))
             cls._insert_text(
                 y_coord=0.25,
-                text_line="- Validation accuracy: {:.3E} %".format(
-                    Decimal(cls._history.history["val_accuracy"][-1])))
+                text_line="- Validation accuracy: {} %".format(
+                    round(cls._history.history["val_accuracy"][-1] * 100, 4)))
             cls._insert_text(
                 y_coord=0.25,
                 text_line="- Validation loss: {:.3E}".format(
@@ -694,8 +670,8 @@ class Load(object):
         cls._insert_text(
             x_coord=0.5, 
             y_coord=0.25,
-            text_line="- Prediction probability: {:.3E} %".format(
-                Decimal(cls._max_probability.item())))
+            text_line="- Max similarity prediction: {} %".format(
+                round(cls._max_probability.item() * 100, 4)))
         cls._insert_text(
             y_coord=0.25,
             text_line="- Type of defect: {} ".format(
@@ -808,7 +784,7 @@ class Load(object):
         cls._insert_text(
             x_coord=0.5, 
             y_coord=0.25,
-            text_line="{:.3E} %".format(
+            text_line="{:.3E}".format(
                 Decimal(cls._ssim_max_score_reference_object)))
         
         # Perfect model and internal areas

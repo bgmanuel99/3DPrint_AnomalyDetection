@@ -66,9 +66,6 @@ class DefectsDetection(object):
         
         print("[INFO] Detecting defects")
         
-        CommonPrints.print_image(
-            "masked_3d_object", masked_3d_object, 600, True)
-        
         segmented_3d_object = CommonFunctionalities.get_segmented_image(
             masked_3d_object)
         
@@ -80,7 +77,7 @@ class DefectsDetection(object):
         ssim_max_score, ssim_max_score_index = CommonFunctionalities \
             .calculate_ssim_max_score(segmented_3d_object, perfect_models)
             
-        # Apply xor bitwrise operation to the segmented 3d printed object and
+        # Apply subtract operation to the segmented 3d printed object and
         # the perfect model
         subtract = cv2.subtract(
             segmented_3d_object, perfect_models[ssim_max_score_index])
@@ -108,6 +105,4 @@ class DefectsDetection(object):
         return (
             masked_3d_object_with_defects, 
             ssim_max_score_index, 
-            ssim_max_score, 
-            1 - ssim_max_score, 
-            0.0)
+            ssim_max_score)

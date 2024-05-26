@@ -35,7 +35,7 @@ class LowContrastDetection(object):
         
         if is_low_contrast(image, fraction_threshold=FRACTION_THRESHOLD): 
             gray = cv2.cvtColor(image.copy(), cv2.COLOR_RGB2GRAY)
-            clahe = cv2.createCLAHE(clipLimit=2.0, tileGridSize=(8, 8))
+            clahe = cv2.createCLAHE(clipLimit=3.0, tileGridSize=(16, 16))
             return clahe.apply(gray)
         else: 
             return image

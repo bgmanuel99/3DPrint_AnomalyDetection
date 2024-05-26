@@ -87,10 +87,13 @@ class GCodeAnalizer(object):
         print("[INFO] Extracting Gcode data")
         
         cls._extract_structured_data(gcode_file)
+        print(cls._coords)
         
         cls._calculate_extrusion_relative_distances()
+        print(cls._coords)
         
         cls._calculate_width_from_relative_extrusion()
+        print(cls._coords)
         
         return cls._coords
     

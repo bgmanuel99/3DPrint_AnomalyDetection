@@ -17,7 +17,8 @@ from keras.api.layers import (
     Dropout, 
     GlobalAveragePooling2D, 
     MaxPooling2D, 
-    Lambda)
+    Lambda, 
+    BatchNormalization)
 from keras.src.callbacks.history import History
 from tensorflow.python.framework.ops import SymbolicTensor
 
@@ -95,8 +96,7 @@ class SiameseNeuralNetwork(object):
             .make_pairs_for_training(trainX, trainY)
         (pair_test, label_test) = SiameseNeuralNetwork.make_pairs_for_training(
             testX, testY)
-        print(len(pair_train))
-        print(len(pair_test))
+        
         print("Building siamese network...")
         imgA = Input(shape=IMAGE_SHAPE)
         imgB = Input(shape=IMAGE_SHAPE)
@@ -188,7 +188,7 @@ class SiameseNeuralNetwork(object):
     def make_pairs_for_training(
             images: np.ndarray, 
             labels: np.ndarray) -> tuple[np.ndarray, np.ndarray]:
-        """Method to create image pairs for training the siamese neural 
+        """Method to create image pairs to train the siamese neural 
         network
 
         Parameters:
@@ -268,8 +268,8 @@ class SiameseNeuralNetwork(object):
         x = Dropout(0.3)(x)
         
         # Prepare the final outputs
-        pooledOutput = GlobalAveragePooling2D()(x)
-        outputs = Dense(embeddingDim)(pooledOutput)
+        pooled_output = GlobalAveragePooling2D()(x)
+        outputs = Dense(embeddingDim)(pooled_output)
         
         # Build the model
         model = Model(inputs, outputs)
